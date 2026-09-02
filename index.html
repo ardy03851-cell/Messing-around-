@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Infinite Coder Workspace Pro</title>
+
+  <!-- CodeMirror for Professional Code Editing -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-ocean.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
+  <!-- FontAwesome for UI Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-main: #0b1120;
+      --bg-panel: #161d2e;
+      --bg-input: #1e293b;
+      --bg-card: #1a2332;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --text-main: #f1f5f9;
+      --text-muted: #64748b;
+      --border-color: #1e293b;
+      --border-light: #334155;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      display: flex;
+      height: 100vh;
+      background: var(--bg-main);
+      color: var(--text-main);
+      overflow: hidden;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 20%);
+    }
+
+    /* Layout */
+    #chat-panel {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-panel);
+      z-index: 10;
+      min-width: 280px;
+    }
+
+    #resizer {
+      width: 4px;
+      background: var(--border-color);
+      cursor: col-resize;
+      transition: background 0.2s;
+      z-index: 20;
+    }
+
+    #resizer:hover,
+    #resizer:active {
+      background: var(--accent);
+    }
+
+    #workspace-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main);
+      min-width: 300px;
+    }
+
+    /* Chat UI */
+    .header {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+
+    .header span {
+      color: var(--accent);
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
+    .header i {
+      color: var(--accent);
+      font-size: 20px;
+      margin-right: 10px;
+      filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.5));
+    }
+
+    #chat-history {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    #chat-history::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #chat-history::-webkit-scrollbar-thumb {
+      background: var(--bg-input);
+      border-radius: 4px;
+    }
+
+    .msg {
+      padding: 14px 18px;
+      border-radius: 14px;
+      line-height: 1.6;
+      font-size: 14px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      animation: fadeIn 0.35s ease-out;
+      position: relative;
+    }
+
+    .msg.user {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      align-self: flex-end;
+      max-width: 85%;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+      font-weight: 500;
+    }
+
+    .msg.ai {
+      background: var(--bg-card);
+      color: var(--text-main);
+      align-self: flex-start;
+      max-width: 92%;
+      border-bottom-left-radius: 4px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .msg.system {
+      background: rgba(16, 185, 129, 0.08);
+      color: var(--success);
+      font-size: 13px;
+      text-align: center;
+      align-self: center;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+      max-width: 80%;
+    }
+
+    .msg.system i {
+      margin-right: 6px;
+    }
+
+    .msg.error {
+      background: rgba(239, 68, 68, 0.08);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      text-align: center;
+      align-self: center;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+
+    .msg.error i {
+      margin-right: 6px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #chat-input-area {
+      padding: 16px 20px 20px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #chat-input {
+      width: 100%;
+      height: 110px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-main);
+      color: var(--text-main);
+      resize: none;
+      font-family: inherit;
+      font-size: 14px;
+      transition: border 0.25s, box-shadow 0.25s;
+      line-height: 1.5;
+    }
+
+    #chat-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    #chat-input::placeholder {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    #send-btn {
+      padding: 13px 24px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      letter-spacing: 0.3px;
+    }
+
+    #send-btn:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    #send-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    #send-btn:disabled {
+      background: var(--bg-input);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 2px solid #fff;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    /* Workspace UI */
+    #toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, var(--bg-panel) 0%, rgba(22, 29, 46, 0.95) 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 16px;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    #toolbar::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+    }
+
+    #tabs {
+      display: flex;
+    }
+
+    .tab {
+      padding: 16px 24px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      user-select: none;
+      color: var(--text-muted);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 2px solid transparent;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    .tab:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .tab i {
+      margin-right: 6px;
+      font-size: 13px;
+    }
+
+    .preview-controls {
+      display: flex;
+      gap: 8px;
+      display: none;
+    }
+
+    .preview-controls.active {
+      display: flex;
+    }
+
+    .icon-btn {
+      background: var(--bg-input);
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card);
+      border-color: var(--border-color);
+      transform: translateY(-1px);
+    }
+
+    .icon-btn.active {
+      color: var(--accent);
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
+    }
+
+    #editor-container,
+    #preview-container {
+      flex: 1;
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    #editor-container.active,
+    #preview-container.active {
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+
+    #preview-container.active {
+      align-items: center;
+    }
+
+    /* Editor Toolbar */
+    #editor-actions {
+      width: 100%;
+      background: linear-gradient(180deg, #263238 0%, #1c2730 100%);
+      padding: 10px 16px;
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid #1a2226;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .editor-btn {
+      background: linear-gradient(135deg, #37474f, #2c3e50);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #eceff1;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: 0.2px;
+    }
+
+    .editor-btn:hover {
+      background: linear-gradient(135deg, #455a64, #37474f);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .editor-btn.danger {
+      border-color: rgba(239, 68, 68, 0.15);
+    }
+
+    .editor-btn.danger:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.25);
+    }
+
+    .editor-btn i {
+      font-size: 12px;
+    }
+
+    /* CodeMirror Overdes */
+    .CodeMirror {
+      flex: 1;
+      width: 100%;
+      height: 100% !important;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* Preview Frame */
+    #preview-wrapper {
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      transition: width 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #preview-wrapper.mobile {
+      width: 375px;
+      border-left: 1px solid #444;
+      border-right: 1px solid #444;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    #preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #fff;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="chat-panel">
+    <div class="header">
+      <div><i class="fa-solid fa-microchip"></i> AI <span>Coder Pro</span></div>
+    </div>
+    <div id="chat-history">
+      <div class="msg system"><i class="fa-solid fa-check-circle"></i> Workspace ready. You can build from scratch, or
+        paste code into the editor to modify it!</div>
+    </div>
+    <div id="chat-input-area">
+      <textarea id="chat-input" placeholder="e.g. 'Build a playable Flappy Bird game' or 'Change the background to red'..." onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"></textarea>
+      <button id="send-btn" onclick="sendMessage()">
+                <span id="btn-text">Generate Code</span>
+                <div class="spinner" id="btn-spinner"></div>
+            </button>
+    </div>
+  </div>
+
+  <div id="resizer"></div>
+
+  <div id="workspace-panel">
+    <div id="toolbar">
+      <div id="tabs">
+        <div class="tab active" id="tab-preview" onclick="switchTab('preview')"><i class="fa-solid fa-play"></i> Live
+          Preview</div>
+        <div class="tab" id="tab-code" onclick="switchTab('code')"><i class="fa-solid fa-code"></i> Code Editor</div>
+      </div>
+
+      <div class="preview-controls active" id="preview-controls">
+        <button class="icon-btn active" id="btn-desktop" onclick="setViewport('desktop')" title="Desktop View"><i class="fa-solid fa-desktop"></i></button>
+        <button class="icon-btn" id="btn-mobile" onclick="setViewport('mobile')" title="Mobile View"><i class="fa-solid fa-mobile-screen"></i></button>
+        <button class="icon-btn" onclick="refreshPreview()" title="Refresh Preview"><i class="fa-solid fa-rotate-right"></i></button>
+      </div>
+    </div>
+
+    <div id="preview-container" class="active">
+      <div id="preview-wrapper">
+        <iframe id="preview-frame"></iframe>
+      </div>
+    </div>
+
+    <div id="editor-container">
+      <!-- New Editor Toolbar -->
+      <div id="editor-actions">
+        <button class="editor-btn" onclick="copyAllCode()"><i class="fa-regular fa-copy"></i> Copy All</button>
+        <button class="editor-btn" onclick="downloadCode()"><i class="fa-solid fa-download"></i> Download HTML</button>
+        <button class="editor-btn danger" onclick="deleteAllCode()"><i class="fa-solid fa-trash"></i> Clear All</button>
+      </div>
+      <textarea id="code-editor"></textarea>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIGURATION ---
+        const API_KEY = "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";
+        const MODEL = "inclusionai/ling-3.0-flash-fin:free";
+
+        let currentCode = "";
+        let chatContext = []; 
+
+        // Highly Optimized Strict Prompt for Perfect Code Searching
+        const SYSTEM_PROMPT = `You are an expert AI web developer building single-file (HTML/CSS/JS) web apps.
+CRITICAL INSTRUCTION: You are an automated pipeline. Output ONLY XML tags. No markdown (\`\`\`html), no conversational text, no explanations.
+
+SCENARIO 1: WRITING A NEW APP FROM SCRATCH
+Wrap your entire application EXACTLY like this:
+<code_full>
+<!DOCTYPE html>
+<html>
+... full code ...
+</html>
+</code_full>
+
+SCENARIO 2: EDITING EXISTING CODE (MANDATORY FOR UPDATES)
+Do NOT rewrite the whole file. Use find-and-replace. Output multiple <code_edit> blocks if needed.
+<code_edit>
+<code_search>
+exact lines to find
+</code_search>
+<code_replace>
+the new lines of code to replace it with
+</code_replace>
+</code_edit>
+
+CRITICAL SEARCH & REPLACE RULES:
+1. <code_search> MUST be an EXACT copy/paste of lines in the current code. 
+2. NEVER use ellipsis (...) or omit lines in the middle of <code_search>.
+3. Include 3 to 5 lines of UNCHANGED code before AND after the part you are changing inside <code_search>. This provides unique context so the automated system targets the correct part of the file.
+4. Output NO TEXT outside the XML tags. Never apologize or explain.`;
+
+        // --- UI & EDITOR INITIALIZATION ---
+        const editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
+            mode: "htmlmixed",
+            theme: "material-ocean",
+            lineNumbers: true,
+            indentUnit: 4,
+            matchBrackets: true,
+            lineWrapping: true
+        });
+
+        editor.on("change", (instance, changeObj) => {
+            if (changeObj.origin !== "setValue") {
+                currentCode = instance.getValue();
+                refreshPreview();
+            }
+        });
+
+        // Resizer Logic
+        const resizer = document.getElementById('resizer');
+        const chatPanel = document.getElementById('chat-panel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'col-resize'; });
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            chatPanel.style.width = `${Math.max(250, e.clientX)}px`;
+        });
+        document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = 'default'; });
+
+        // --- EDITOR TOOLBAR FUNCTIONS ---
+        function copyAllCode() {
+            navigator.clipboard.writeText(currentCode).then(() => {
+                addMessage("system", "<i class='fa-solid fa-clipboard-check'></i> Code copied to clipboard!");
+            }).catch(err => {
+                addMessage("error", "Failed to copy: " + err);
+            });
+        }
+
+        function deleteAllCode() {
+            if(confirm("Are you sure you want to delete all code? This cannot be undone.")) {
+                currentCode = "";
+                syncCodeWorkspace();
+                addMessage("system", "<i class='fa-solid fa-trash'></i> Code editor cleared.");
+            }
+        }
+
+        function downloadCode() {
+            if(!currentCode.trim()) {
+                alert("Nothing to download!");
+                return;
+            }
+            const blob = new Blob([currentCode], { type: "text/html" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "ai-app.html";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            addMessage("system", "<i class='fa-solid fa-file-arrow-down'></i> File downloaded!");
+        }
+
+        // --- VIEWPORT & TABS ---
+        function switchTab(tab) {
+            document.getElementById('tab-preview').classList.remove('active');
+            document.getElementById('tab-code').classList.remove('active');
+            document.getElementById('preview-container').classList.remove('active');
+            document.getElementById('editor-container').classList.remove('active');
+            document.getElementById('preview-controls').classList.remove('active');
+            
+            if(tab === 'preview') {
+                document.getElementById('tab-preview').classList.add('active');
+                document.getElementById('preview-container').classList.add('active');
+                document.getElementById('preview-controls').classList.add('active');
+            } else {
+                document.getElementById('tab-code').classList.add('active');
+                document.getElementById('editor-container').classList.add('active');
+                editor.refresh(); 
+            }
+        }
+
+        function setViewport(type) {
+            const wrapper = document.getElementById('preview-wrapper');
+            document.getElementById('btn-desktop').classList.remove('active');
+            document.getElementById('btn-mobile').classList.remove('active');
+            
+            if (type === 'mobile') {
+                wrapper.classList.add('mobile');
+                document.getElementById('btn-mobile').classList.add('active');
+            } else {
+                wrapper.classList.remove('mobile');
+                document.getElementById('btn-desktop').classList.add('active');
+            }
+        }
+
+        function refreshPreview() {
+            const iframe = document.getElementById("preview-frame");
+            iframe.srcdoc = currentCode; 
+        }
+
+        function syncCodeWorkspace() {
+            editor.setValue(currentCode);
+            refreshPreview();
+        }
+
+        // --- CHAT LOGIC ---
+        function addMessage(role, text) {
+            const history = document.getElementById("chat-history");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `msg ${role}`;
+            
+            if (role === 'ai') {
+                msgDiv.textContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                msgDiv.innerHTML = msgDiv.textContent; 
+            } else {
+                msgDiv.innerHTML = text; 
+            }
+
+            history.appendChild(msgDiv);
+            history.scrollTop = history.scrollHeight;
+            return msgDiv;
+        }
+
+        function toggleLoading(isLoading) {
+            const btn = document.getElementById("send-btn");
+            const input = document.getElementById("chat-input");
+            const text = document.getElementById("btn-text");
+            const spinner = document.getElementById("btn-spinner");
+
+            btn.disabled = isLoading;
+            input.disabled = isLoading;
+            
+            if (isLoading) {
+                text.style.display = "none";
+                spinner.style.display = "block";
+            } else {
+                text.style.display = "block";
+                spinner.style.display = "none";
+                input.focus();
+            }
+        }
+
+        // --- 4-STAGE FUZZY SEARCH & REPLACE ENGINE ---
+        function executeSmartReplace(originalCode, searchStr, replaceStr) {
+            // Stage 1: Exact Match (Fastest and safest)
+            if (originalCode.includes(searchStr)) {
+                return originalCode.replace(searchStr, replaceStr);
+            }
+
+            // Stage 2: Trimmed Match (AI sometimes adds blank lines at the start/end of the XML block)
+            let trimmedSearch = searchStr.trim();
+            if (trimmedSearch.length > 0 && originalCode.includes(trimmedSearch)) {
+                return originalCode.replace(trimmedSearch, replaceStr);
+            }
+
+            // Stage 3: Flexible Whitespace Match (Ignores differences in tabs vs spaces)
+            let escapedSearch = trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            let flexibleRegexStr = escapedSearch.replace(/\s+/g, '\\s+');
+            let flexibleRegex = new RegExp(flexibleRegexStr);
+            if (flexibleRegex.test(originalCode)) {
+                return originalCode.replace(flexibleRegex, replaceStr);
+            }
+
+            // Stage 4: Aggressive Structural Match (Ignores indentation entirely, matches line-by-line)
+            let searchLines = trimmedSearch.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (searchLines.length > 0) {
+                let escapedLines = searchLines.map(l => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                let structuralRegexStr = escapedLines.join('\\s*');
+                let structuralRegex = new RegExp(structuralRegexStr);
+                if (structuralRegex.test(originalCode)) {
+                    return originalCode.replace(structuralRegex, replaceStr);
+                }
+            }
+
+            return null; // All 4 stages failed
+        }
+
+        function applyAIResponse(responseText) {
+            let wasUpdated = false;
+            let editsApplied = 0;
+            let editsFailed = 0;
+
+            // Scenario 1: Complete Overwrite
+            const fullMatch = responseText.match(/<code_full>([\s\S]*?)<\/code_full>/i);
+            if (fullMatch) {
+                currentCode = fullMatch[1].trim();
+                wasUpdated = true;
+            }
+
+            // Scenario 2: Find and Replace Blocks
+            const editRegex = /<code_edit>\s*<code_search>([\s\S]*?)<\/code_search>\s*<code_replace>([\s\S]*?)<\/code_replace>\s*<\/code_edit>/gi;
+            let match;
+            
+            while ((match = editRegex.exec(responseText)) !== null) {
+                // Strip the immediate first/last newline inside the tags to prevent matching errors
+                let searchStr = match[1].replace(/^\n/, '').replace(/\n$/, '');
+                let replaceStr = match[2].replace(/^\n/, '').replace(/\n$/, '');
+
+                let newCode = executeSmartReplace(currentCode, searchStr, replaceStr);
+                
+                if (newCode !== null) {
+                    currentCode = newCode;
+                    wasUpdated = true;
+                    editsApplied++;
+                } else {
+                    editsFailed++;
+                    console.warn("SEARCH BLOCK FAILED ALL 4 MATCHING STAGES:\n", searchStr);
+                }
+            }
+
+            // Fallback: If AI hallucinated markdown instead of XML tags
+            if (!wasUpdated && responseText.includes("```html") && !responseText.includes("<code_search>")) {
+                const mdMatch = responseText.match(/```html([\s\S]*?)```/i);
+                if (mdMatch) {
+                    currentCode = mdMatch[1].trim();
+                    wasUpdated = true;
+                }
+            }
+
+            // --- REPORTING ---
+            if (wasUpdated) {
+                syncCodeWorkspace();
+                let statusMsg = `<i class="fa-solid fa-wand-magic-sparkles"></i> Code updated automatically!`;
+                if (editsApplied > 0) statusMsg += ` (${editsApplied} precise edit(s) applied).`;
+                if (editsFailed > 0) addMessage("error", `<i class="fa-solid fa-triangle-exclamation"></i> Warning: ${editsFailed} edit(s) failed. The AI generated invalid search context.`);
+                else addMessage("system", statusMsg);
+            } else {
+                addMessage("error", `<i class="fa-solid fa-circle-xmark"></i> The AI responded, but failed to output usable code modifications.`);
+                addMessage("ai", responseText); 
+            }
+        }
+
+        // --- API INTEGRATION ---
+        async function sendMessage() {
+            const inputEl = document.getElementById("chat-input");
+            const prompt = inputEl.value.trim();
+            if (!prompt) return;
+
+            addMessage("user", prompt);
+            inputEl.value = "";
+            
+            chatContext.push({ role: "user", content: prompt });
+
+            toggleLoading(true);
+            const thinkingMsg = addMessage("system", `<i class="fa-solid fa-cog fa-spin"></i> Analyzing logic and writing code...`);
+
+            let messagesForAPI = [{ role: "system", content: SYSTEM_PROMPT }, ...chatContext];
+            
+            // Only inject the code on request (Saves massive amounts of memory tokens)
+            if (currentCode.trim() !== "") {
+                messagesForAPI.push({
+                    role: "system", 
+                    content: `CURRENT CODEBASE STATE:\n\n${currentCode}\n\nCRITICAL REMINDER: You MUST output ONLY <code_edit> tags with 3-5 lines of surrounding unchanged context in your <code_search> block to modify this.`
+                });
+            }
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        messages: messagesForAPI
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error.message);
+
+                const aiText = data.choices[0].message.content;
+                chatContext.push({ role: "assistant", content: aiText });
+                thinkingMsg.remove();
+                
+                applyAIResponse(aiText);
+
+            } catch (error) {
+                thinkingMsg.remove();
+                addMessage("error", `<i class="fa-solid fa-network-wired"></i> Error connecting to API: ${error.message}`);
+            } finally {
+                toggleLoading(false);
+            }
+        }
+  </script>
+</body>
+
+</html>
