@@ -486,7 +486,7 @@ resize();
 const TILE = 16;                 // logical px per tile
 const SCALE = 3;                 // screen zoom (16 -> 48px)
 const WORLD_W = 160, WORLD_H = 220;
-const RAY_COUNT = 96;            // light rays per source
+const RAY_COUNT = 128;           // light rays per source
 const VIEW_W = () => window.innerWidth;
 const VIEW_H = () => window.innerHeight;
 
@@ -733,8 +733,8 @@ function s2wY(sy){ return sy/SCALE + GAME.cam.y; }
 // raycast from (wx,wy) at angle; returns distance (in world px) until a solid tile
 function castRay(wx, wy, ang, maxDist){
   const dx=Math.cos(ang), dy=Math.sin(ang);
-  let d=0;
-  const step=2;
+  const step=1.5;
+  let d=step*0.5;            // start inside the source tile, not on its edge
   while(d<maxDist){
     const x=wx+dx*d, y=wy+dy*d;
     const tx=Math.floor(x/TILE), ty=Math.floor(y/TILE);
@@ -747,6 +747,7 @@ function castRay(wx, wy, ang, maxDist){
 
 // build visibility polygon for a light, return array of [sx,sy] screen points
 function lightPolygon(light){
+  if(light._poly && light._frame===GAME._frame) return light._poly;  // cache per frame
   const wx=light.x, wy=light.y;
   const maxR=light.r;
   const pts=[];
@@ -757,6 +758,7 @@ function lightPolygon(light){
     const hx = wx+Math.cos(ang)*d, hy=wy+Math.sin(ang)*d;
     pts.push([w2sX(hx), w2sY(hy)]);
   }
+  light._poly=pts; light._frame=GAME._frame;
   return pts;
 }
 
@@ -942,9 +944,10 @@ function breakTile(tx,ty,t){
   } else {
     GAME.player.gold += def.value;
   }
-  // particles
-  for(let i=0;i<10;i++){
-    spawnParticle((tx+0.5)*TILE,(ty+0.5)*TILE, rand(-40,40), rand(-60,-10), 0.6, defColor(t), 2);
+  // custom debris: sample chunks from the tile's own sprite and shrink them
+  spawnDebris((tx+0.5)*TILE,(ty+0.5)*TILE,t);
+  if(t>=T.COPPER && t<=T.GEM){
+    for(let i=0;i<8;i++) spawnSpark((tx+0.5)*TILE,(ty+0.5)*TILE, defColor(t));
   }
   floatText('+'+def.value+'g', (tx+0.5)*TILE, ty*TILE, defColor(t));
   sfx('mine');
@@ -976,7 +979,7 @@ function placeTorch(){
 }
 
 function addLight(L){
-  L.spin = Math.random()*Math.PI*2;
+  if(L.spin===undefined) L.spin = 0;   // stable orientation: no per-frame rotation (kills shimmer)
   GAME.lights.push(L);
 }
 
@@ -1018,25 +1021,124 @@ function buyItem(key){
 function prettyItem(k){return {stonePick:'Stone Pick',ironPick:'Iron Pick',diamondPick:'Diamond Pick',torch3:'3 Torches',lantern:'Lantern',boots:'Miner Boots'}[k]||k;}
 
 /* ---------- Particles + float text ---------- */
-function spawnParticle(x,y,vx,vy,life,color,size){
-  if(GAME.particles.length>240) GAME.particles.shift();
-  GAME.particles.push({x,y,vx,vy,life,max:life,color,size:size||2});
+/* ---------- Custom particle engine ----------
+   Debris = cropped chunks of the broken tile's own sprite (texture PNG or
+   code-drawn fallback), shrinking + rotating + falling. Plus dust + ore sparks.
+   Fully custom canvas rendering — no libraries. */
+function tileSourceFor(t){
+  const map={[T.DIRT]:'dirt',[T.STONE]:'stone',[T.COPPER]:'copper',[T.IRON]:'iron',[T.GOLD]:'gold',[T.GEM]:'gem',[T.BEDROCK]:'bedrock',[T.WOOD]:'wood',[T.GRASS]:'grass'};
+  const key=map[t];
+  if(key && textures[key]) return {img:textures[key], sw:16, sh:16};
+  const sp=getTileSprite(t); return {img:sp, sw:sp.width, sh:sp.height};
+}
+function spawnDebris(wx,wy,t){
+  const src=tileSourceFor(t);
+  const unit=(TILE*SCALE)/src.sw;   // screen px per source px
+  const n=16;
+  for(let i=0;i<n;i++){
+    const cw=randInt(3,7), ch=randInt(3,7);
+    const ox=randInt(0,Math.max(1,src.sw-cw)), oy=randInt(0,Math.max(1,src.sh-ch));
+    const ang=rand(0,Math.PI*2), spd=rand(40,150);
+    GAME.particles.push({
+      x:wx+rand(-4,4), y:wy+rand(-4,4),
+      vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd - rand(20,90),
+      rot:rand(0,Math.PI*2), vr:rand(-8,8),
+      life:rand(0.5,1.0), max:1.0,
+      src:src.img, sx:ox, sy:oy, sw:cw, sh:ch, unit:unit, isDebris:true
+    });
+  }
+  // dust puff
+  for(let i=0;i<6;i++){
+    const ang=rand(0,Math.PI*2), spd=rand(10,40);
+    GAME.particles.push({x:wx,y:wy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-rand(0,30),life:rand(0.3,0.6),max:0.6,color:'rgba(180,170,150,0.5)',isDust:true,size:rand(2,4)});
+  }
+}
+function spawnSpark(wx,wy,color){
+  const ang=rand(0,Math.PI*2), spd=rand(60,180);
+  GAME.particles.push({x:wx,y:wy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-rand(30,80),life:rand(0.4,0.8),max:0.8,color:color,isSpark:true,size:rand(1.5,3)});
 }
 function updateParticles(dt){
   for(let i=GAME.particles.length-1;i>=0;i--){
     const p=GAME.particles[i];
-    p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=120*dt; p.life-=dt;
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=150*dt; p.vx*=0.98;
+    if(p.rot!==undefined) p.rot+=p.vr*dt;
+    p.life-=dt;
     if(p.life<=0) GAME.particles.splice(i,1);
   }
 }
 function drawParticles(){
   for(const p of GAME.particles){
-    ctx.globalAlpha = clamp(p.life/p.max,0,1);
-    ctx.fillStyle=p.color;
-    const s=p.size*SCALE*0.4;
-    ctx.fillRect(w2sX(p.x)-s/2, w2sY(p.y)-s/2, s, s);
+    const a=clamp(p.life/p.max,0,1);
+    if(p.isDebris){
+      const drawSize=p.sw*p.unit*(0.3+0.7*a);   // shrink as it dies
+      ctx.globalAlpha=a;
+      ctx.save();
+      ctx.translate(w2sX(p.x),w2sY(p.y));
+      ctx.rotate(p.rot);
+      ctx.drawImage(p.src,p.sx,p.sy,p.sw,p.sh,-drawSize/2,-drawSize/2,drawSize,drawSize);
+      ctx.restore();
+    } else if(p.isSpark){
+      ctx.globalAlpha=a;
+      ctx.globalCompositeOperation='lighter';
+      ctx.fillStyle=p.color;
+      const s=p.size*SCALE*0.4*a;
+      ctx.beginPath(); ctx.arc(w2sX(p.x),w2sY(p.y),s,0,Math.PI*2); ctx.fill();
+      ctx.globalCompositeOperation='source-over';
+    } else {
+      ctx.globalAlpha=a*0.6;
+      ctx.fillStyle=p.color||'#aaa';
+      const s=p.size*SCALE*0.3*a;
+      ctx.beginPath(); ctx.arc(w2sX(p.x),w2sY(p.y),s,0,Math.PI*2); ctx.fill();
+    }
   }
   ctx.globalAlpha=1;
+}
+
+/* ---------- Mining target indicator: a smooth wobbling 'tongue' ---------- */
+function drawMineIndicator(){
+  const tgt=targetTileInFront();
+  if(!tgt) return;
+  const p=GAME.player;
+  const x0=w2sX(p.x+p.w/2), y0=w2sY(p.y+p.h*0.45);
+  const x1=w2sX((tgt.tx+0.5)*TILE), y1=w2sY((tgt.ty+0.5)*TILE);
+  const t=GAME.time;
+  const mx=(x0+x1)/2, my=(y0+y1)/2;
+  let nx=-(y1-y0), ny=(x1-x0); const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
+  const wob=Math.sin(t*5)*7;
+  const cpx=mx+nx*wob, cpy=my+ny*wob;
+  ctx.save();
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  // outer glow
+  ctx.strokeStyle='rgba(255,170,60,0.22)';
+  ctx.lineWidth=12;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.quadraticCurveTo(cpx,cpy,x1,y1); ctx.stroke();
+  // tongue body
+  ctx.strokeStyle='rgba(255,200,110,0.85)';
+  ctx.lineWidth=4+Math.sin(t*7)*0.8;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.quadraticCurveTo(cpx,cpy,x1,y1); ctx.stroke();
+  // bright core
+  ctx.strokeStyle='rgba(255,245,210,0.9)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.quadraticCurveTo(cpx,cpy,x1,y1); ctx.stroke();
+  // tip dot
+  ctx.fillStyle='#fff2c0';
+  ctx.beginPath(); ctx.arc(x1,y1,3+Math.sin(t*7)*0.8,0,Math.PI*2); ctx.fill();
+  // pulsing reticle + corner ticks on target tile
+  const size=TILE*SCALE;
+  const sx=Math.floor((tgt.tx*TILE-GAME.cam.x)*SCALE), sy=Math.floor((tgt.ty*TILE-GAME.cam.y)*SCALE);
+  const pulse=0.5+0.5*Math.sin(t*4);
+  ctx.strokeStyle=`rgba(255,220,120,${0.4+0.5*pulse})`;
+  ctx.lineWidth=2;
+  const pad=2+1*pulse;
+  ctx.strokeRect(sx+pad, sy+pad, size-pad*2, size-pad*2);
+  const tk=5;
+  ctx.beginPath();
+  ctx.moveTo(sx,sy+tk); ctx.lineTo(sx,sy); ctx.lineTo(sx+tk,sy);
+  ctx.moveTo(sx+size-tk,sy); ctx.lineTo(sx+size,sy); ctx.lineTo(sx+size,sy+tk);
+  ctx.moveTo(sx+size,sy+size-tk); ctx.lineTo(sx+size,sy+size); ctx.lineTo(sx+size-tk,sy+size);
+  ctx.moveTo(sx,sy+size-tk); ctx.lineTo(sx,sy+size); ctx.lineTo(sx+tk,sy+size);
+  ctx.stroke();
+  ctx.restore();
 }
 function floatText(text,x,y,color){
   GAME.floatTexts.push({text,x,y,life:1,color:color||'#fff'});
@@ -1178,13 +1280,12 @@ function render(){
   GAME.lights.length=0;
   // entrance torch
   const {entX,entY}=GAME.entrance;
-  if(getTile(entX,entY-1)===T.TORCH) addLight({x:(entX+0.5)*TILE,y:(entY+0.2)*TILE,r:TILE*9,color:[255,170,80],intensity:0.6,flicker:true});
+  if(getTile(entX,entY-1)===T.TORCH) addLight({x:(entX+0.5)*TILE,y:(entY+0.2)*TILE,r:TILE*9,color:[255,170,80],intensity:0.55+0.06*Math.sin(GAME.time*7)});
   // placed torches (scan near view)
   for(let ty=Math.max(0,Math.floor(GAME.cam.y/TILE)-1); ty<=Math.min(WORLD_H-1,Math.ceil((GAME.cam.y+H/SCALE)/TILE)+1); ty++){
     for(let tx=Math.max(0,Math.floor(GAME.cam.x/TILE)-1); tx<=Math.min(WORLD_W-1,Math.ceil((GAME.cam.x+W/SCALE)/TILE)+1); tx++){
       if(getTile(tx,ty)===T.TORCH){
-        const flick = 0.9 + Math.sin(GAME.time*15 + tx*3.1 + ty*2.3)*0.1;
-        addLight({x:(tx+0.5)*TILE,y:(ty+0.4)*TILE,r:TILE*7*flick,color:[255,150,60],intensity:0.55,flicker:true});
+        addLight({x:(tx+0.5)*TILE,y:(ty+0.4)*TILE,r:TILE*7,color:[255,150,60],intensity:0.5+0.08*Math.sin(GAME.time*8 + tx*3.1 + ty*2.3)});
       }
     }
   }
@@ -1195,6 +1296,8 @@ function render(){
   addLight({x:p.x+p.w/2,y:p.y+p.h/2,r:TILE*3.2,color:[150,170,200],intensity:0.32});
 
   renderLighting();
+
+  drawMineIndicator();
 
   drawFloats();
 
@@ -1357,6 +1460,7 @@ function loop(t){
   const dt=Math.min((t-lastT)/1000, 0.05) || 0;
   lastT=t;
   GAME.time+=dt;
+  GAME._frame=(GAME._frame||0)+1;
   if(GAME.state==='play'){
     readKeys();
     updatePlayer(dt);
