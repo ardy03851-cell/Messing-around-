@@ -1,1834 +1,1333 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#0a0d12" />
-  <title>Deepdelve — Cave Miner</title>
-  <style>
-    :root {
-      --font-display: 'Cinzel', Georgia, serif;
-      --font-body: 'Press Start 2P', monospace;
-      --col-bg: #0a0d12;
-      --col-panel: rgba(12, 17, 24, 0.82);
-      --col-border: #2b3a4f;
-      --col-border-lit: #4a6480;
-      --col-text: #e6eef7;
-      --col-muted: #8ba0b8;
-      --col-gold: #f5c542;
-      --col-copper: #c8753f;
-      --col-iron: #9fb0c0;
-      --col-gem: #7be0d4;
-      --col-flame: #ff8a3d;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Interface - Fully Functional</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    * {
-      box-sizing: border-box;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background-color: #1a1a1a;
+            color: #e5e5e5;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      background: #05070a;
-      color: var(--col-text);
-      font-family: var(--font-body);
-      overflow: hidden;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      overscroll-behavior: none;
-    }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
 
-    #game {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-      background: #000;
-    }
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: #262626;
+            border-right: 1px solid #404040;
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* ===== UI overlay ===== */
-    #ui {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-    }
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #404040;
+        }
 
-    #ui * {
-      pointer-events: auto;
-    }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
+        }
 
-    .hud {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      background: var(--col-panel);
-      border: 2px solid var(--col-border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 10px;
-      line-height: 1.6;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-      min-width: 168px;
-    }
+        .back-arrow {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
 
-    .hud .title {
-      font-family: var(--col-display);
-      font-size: 15px;
-      letter-spacing: 1px;
-      color: var(--col-gold);
-      text-shadow: 0 0 10px rgba(245, 197, 66, 0.4);
-      margin-bottom: 6px;
-    }
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: #ff6b35;
+            font-size: 14px;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
 
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      justify-content: space-between;
-    }
+        .new-chat-btn:hover {
+            opacity: 0.8;
+        }
 
-    .label {
-      color: var(--col-muted);
-    }
+        .plus-icon {
+            width: 16px;
+            height: 16px;
+            background-color: #ff6b35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
 
-    .val {
-      color: var(--col-text);
-      font-weight: 700;
-    }
+        .sidebar-nav {
+            padding: 16px;
+            border-bottom: 1px solid #404040;
+        }
 
-    .val.gold {
-      color: var(--col-gold);
-    }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            color: #b3b3b3;
+            font-size: 14px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
 
-    .barwrap {
-      width: 100%;
-      height: 8px;
-      background: #0c1218;
-      border: 1px solid var(--col-border);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 2px;
-    }
+        .nav-item:hover {
+            color: #fff;
+        }
 
-    .barfill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #f5c542, #ff8a3d);
-      transition: width .12s linear;
-    }
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
 
-    /* shop */
-    .panel {
-      position: absolute;
-      right: 12px;
-      top: 12px;
-      background: var(--col-panel);
-      border: 2px solid var(--col-border);
-      border-radius: 10px;
-      padding: 12px;
-      min-width: 210px;
-      max-width: 240px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      display: none;
-    }
+        .sidebar-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
 
-    .panel.open {
-      display: block;
-    }
+        .section-title {
+            font-size: 12px;
+            color: #808080;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .panel h2 {
-      font-family: var(--col-display);
-      font-size: 15px;
-      color: var(--col-gold);
-      margin: 0 0 8px;
-      letter-spacing: 1px;
-      text-shadow: 0 0 10px rgba(245, 197, 66, 0.3);
-    }
+        .recent-items {
+            min-height: 20px;
+        }
 
-    .item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 6px 0;
-      border-bottom: 1px dashed #1c2733;
-      font-size: 9px;
-    }
+        .recent-item {
+            padding: 8px 0;
+            color: #b3b3b3;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .item:last-child {
-      border-bottom: none;
-    }
+        .recent-item:hover {
+            color: #fff;
+        }
 
-    .item .nm {
-      flex: 1;
-    }
+        .empty-state {
+            padding: 8px 0;
+            text-align: center;
+        }
 
-    .item .desc {
-      color: var(--col-muted);
-      font-size: 8px;
-      display: block;
-    }
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid #404040;
+        }
 
-    .btn {
-      background: #16202c;
-      border: 2px solid var(--col-border);
-      color: var(--col-text);
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-family: var(--col-body);
-      font-size: 9px;
-      touch-action: manipulation;
-      cursor: pointer;
-      min-width: 46px;
-      transition: background .1s, border-color .1s, transform .05s;
-    }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
 
-    .btn:active {
-      background: #223344;
-      transform: translateY(1px);
-    }
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            background-color: #ff6b35;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
 
-    .btn.gold {
-      border-color: var(--col-gold);
-      color: var(--col-gold);
-    }
+        .user-details {
+            flex: 1;
+        }
 
-    .btn:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-    }
+        .user-name {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
 
-    .close {
-      margin-top: 8px;
-      width: 100%;
-    }
+        .user-plan {
+            font-size: 12px;
+            color: #808080;
+        }
 
-    /* touch controls */
-    .stick {
-      position: absolute;
-      left: 26px;
-      bottom: 26px;
-      width: 128px;
-      height: 128px;
-      border-radius: 64px;
-      border: 2px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(2px);
-    }
+        .chevron-down {
+            width: 16px;
+            height: 16px;
+            opacity: 0.5;
+        }
 
-    .knob {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 46px;
-      height: 46px;
-      border-radius: 23px;
-      background: radial-gradient(circle at 35% 30%, #5a6b80, #1b2530);
-      border: 2px solid var(--col-border-lit);
-      transform: translate(-50%, -50%);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    }
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a1a1a;
+        }
 
-    .actions {
-      position: absolute;
-      right: 22px;
-      bottom: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: flex-end;
-    }
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+        }
 
-    .abtn {
-      width: 74px;
-      height: 74px;
-      border-radius: 16px;
-      border: 2px solid var(--col-border);
-      background: rgba(18, 26, 36, 0.92);
-      color: var(--col-text);
-      font-family: var(--col-body);
-      font-size: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      touch-action: manipulation;
-      line-height: 1.3;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
-      transition: transform .05s, background .1s;
-    }
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 40px;
+        }
 
-    .abtn:active {
-      transform: scale(0.94);
-      background: rgba(40, 56, 76, 0.95);
-    }
+        .chat-container {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
 
-    .abtn.mine {
-      border-color: #6b7a2c;
-      color: #d7e08a;
-    }
+        .chat-container.active {
+            display: flex;
+        }
 
-    .abtn.torch {
-      border-color: var(--col-flame);
-      color: #ffd0a0;
-    }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: calc(100vh - 200px);
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #404040 #262626;
+            scroll-behavior: smooth;
+        }
 
-    .abtn.shop {
-      border-color: var(--col-gold);
-      color: var(--col-gold);
-    }
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    /* hint / toast */
-    .toast {
-      position: absolute;
-      left: 50%;
-      top: 18px;
-      transform: translateX(-50%);
-      background: rgba(8, 12, 18, 0.92);
-      border: 2px solid var(--col-border-lit);
-      color: var(--col-text);
-      font-size: 10px;
-      padding: 8px 14px;
-      border-radius: 8px;
-      opacity: 0;
-      transition: opacity .25s;
-      white-space: nowrap;
-      text-align: center;
-      max-width: 90vw;
-    }
+        .chat-messages::-webkit-scrollbar-track {
+            background: #262626;
+            border-radius: 4px;
+        }
 
-    .toast.show {
-      opacity: 1;
-    }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 4px;
+        }
 
-    /* title screen */
-    #title {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(ellipse at 50% 30%, #141d2a 0%, #05070a 70%);
-      text-align: center;
-      z-index: 20;
-      pointer-events: auto;
-    }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
 
-    #title h1 {
-      font-family: var(--col-display);
-      font-size: 54px;
-      letter-spacing: 4px;
-      color: var(--col-gold);
-      margin: 0 0 4px;
-      text-shadow: 0 0 24px rgba(245, 197, 66, 0.45), 0 4px 0 #2a1f08;
-    }
+        .message {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+        }
 
-    #title .sub {
-      font-size: 9px;
-      color: var(--col-muted);
-      letter-spacing: 3px;
-      margin-bottom: 34px;
-    }
+        .message.user {
+            flex-direction: row-reverse;
+        }
 
-    #title .play {
-      font-family: var(--col-display);
-      font-size: 20px;
-      letter-spacing: 2px;
-      background: transparent;
-      border: 2px solid var(--col-gold);
-      color: var(--col-gold);
-      padding: 14px 40px;
-      border-radius: 8px;
-      cursor: pointer;
-      text-shadow: 0 0 10px rgba(245, 197, 66, 0.4);
-      animation: pulse 1.8s ease-in-out infinite;
-    }
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
 
-    @keyframes pulse {
+        .message.user .message-avatar {
+            background-color: #ff6b35;
+            color: white;
+        }
 
-      0%,
-      100% {
-        opacity: 1;
-      }
+        .message.assistant .message-avatar {
+            background-color: #4a90e2;
+            color: white;
+        }
 
-      50% {
-        opacity: 0.55;
-      }
-    }
+        .message-content {
+            max-width: 70%;
+            background-color: #262626;
+            border-radius: 12px;
+            padding: 16px;
+            color: #e5e5e5;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .message.assistant .message-content {
+            padding: 0; /* Remove padding for container of artifacts */
+        }
+        .message-text-part {
+            padding: 16px;
+            white-space: pre-wrap;
+        }
 
-    #title .hint {
-      position: absolute;
-      bottom: 24px;
-      font-size: 8px;
-      color: var(--col-muted);
-      line-height: 1.8;
-    }
-  </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Press+Start+2P&display=swap"
-    rel="stylesheet">
+        .message.user .message-content {
+            background-color: #ff6b35;
+            color: white;
+            padding: 16px; /* Restore padding for user messages */
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #808080;
+            font-style: italic;
+            padding: 16px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #808080;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .greeting {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            font-size: 32px;
+            font-weight: 400;
+            color: #fff;
+        }
+
+        .sun-icon {
+            width: 32px;
+            height: 32px;
+            color: #ff6b35;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .chat-container .search-container {
+            position: sticky;
+            bottom: 0;
+            background-color: #1a1a1a;
+            padding: 20px 0;
+            margin: 0;
+            max-width: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 120px 16px 16px;
+            background-color: #262626;
+            border: 1px solid #404040;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            border-color: #ff6b35;
+        }
+
+        .search-input::placeholder {
+            color: #808080;
+        }
+
+        .search-actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 4px;
+        }
+
+        .search-btn {
+            padding: 8px;
+            background: none;
+            border: none;
+            color: #808080;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn:hover {
+            background-color: #404040;
+        }
+
+        .send-btn {
+            padding: 8px;
+            background-color: #ff6b35;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background-color: #e55a2b;
+        }
+
+        .send-btn:disabled {
+            background-color: #404040;
+            cursor: not-allowed;
+        }
+
+        .model-selector {
+            align-self: flex-end;
+            margin-bottom: 20px;
+            margin-right: 60px;
+        }
+
+        .model-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: #b3b3b3;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .model-btn:hover {
+            background-color: #262626;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background-color: #262626;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            color: #e5e5e5;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background-color: #333;
+            border-color: #555;
+            transform: translateY(-1px);
+        }
+
+        .action-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.8;
+        }
+        
+        /* Artifact Canvas Styles */
+        .artifact-canvas {
+            background-color: #0d0d0d;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            margin: 16px;
+            overflow: hidden;
+        }
+
+        .artifact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2a2a2a;
+            padding: 8px 12px;
+            border-bottom: 1px solid #404040;
+        }
+
+        .artifact-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #b3b3b3;
+        }
+
+        .artifact-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .artifact-btn {
+            background: none;
+            border: 1px solid #555;
+            color: #b3b3b3;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .artifact-btn:hover {
+            background-color: #404040;
+            color: #fff;
+        }
+        
+        .artifact-btn.view-btn {
+            border-color: #4a90e2;
+            color: #4a90e2;
+        }
+        .artifact-btn.view-btn:hover {
+            background-color: #4a90e2;
+            color: #fff;
+        }
+
+        .artifact-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .artifact-code {
+            padding: 12px;
+            max-height: 400px;
+            overflow: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #404040 #1a1a1a;
+        }
+        
+        .artifact-code pre {
+            margin: 0;
+        }
+
+        .artifact-code code {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            color: #e5e5e5;
+            white-space: pre;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .greeting {
+                font-size: 24px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .action-btn {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <canvas id="game"></canvas>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="back-arrow" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    Claude
+                </div>
+                <button class="new-chat-btn" id="newChatBtn">
+                    <div class="plus-icon">+</div>
+                    New chat
+                </button>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                    </svg>
+                    Chats
+                </div>
+                <div class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    Projects
+                </div>
+                <div class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Artifacts
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="section-title">Recents</div>
+                <div class="recent-items" id="recentItems">
+                    <div class="empty-state" id="emptyState">
+                        <span style="color: #666; font-size: 13px; font-style: italic;">No recent conversations</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">H</div>
+                    <div class="user-details">
+                        <div class="user-name">Hassan</div>
+                        <div class="user-plan">Pro plan</div>
+                    </div>
+                    <svg class="chevron-down" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="greeting">
+                        <svg class="sun-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+                        </svg>
+                        Good morning, Hassan
+                    </div>
+                    
+                    <div class="search-container">
+                        <textarea class="search-input" id="welcomeInput" placeholder="How can I help you today?" rows="1"></textarea>
+                        <div class="search-actions">
+                            <button class="search-btn" id="researchBtn">Research</button>
+                            <button class="send-btn" id="sendBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="max-width: 600px; margin-bottom: 15px; padding: 12px; background-color: #2a2a2a; border-radius: 8px; border: 1px solid #404040;">
+                        <div style="font-size: 13px; color: #b3b3b3; text-align: center; margin-bottom: 10px;">
+                            💡 <strong>First time?</strong> A small popup will appear for authentication - please allow it to enable free Claude access via Puter.js
+                        </div>
+                        <div style="font-size: 12px; color: #808080; text-align: center; margin-bottom: 10px;" id="protocolNotice">
+                            <!-- This will be populated by JS -->
+                        </div>
+                        <div style="text-align: center;">
+                            <button id="authButton" style="background-color: #ff6b35; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                🔐 Authenticate with Puter
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="model-selector">
+                        <button class="model-btn" id="modelSelector">
+                            <span id="currentModel">Claude Sonnet 4</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" data-prompt="Help me write">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                            Write
+                        </button>
+                        <button class="action-btn" data-prompt="Teach me about">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9l-11-6zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
+                            </svg>
+                            Learn
+                        </button>
+                        <button class="action-btn" data-prompt="Help me code">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                            </svg>
+                            Code
+                        </button>
+                        <button class="action-btn" data-prompt="Help me with daily tasks">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Life stuff
+                        </button>
+                        <button class="action-btn" data-prompt="Help me connect my apps">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H6.99C4.79 7 3 8.79 3 11s1.79 4 4 4H11v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1H13V17h4.01c2.2 0 4-1.79 4-4s-1.8-4-4.01-4z"/>
+                            </svg>
+                            Connect apps
+                        </button>
+                    </div>
+                </div>
 
-  <div id="ui">
-    <div class="hud" id="hud" style="display:none;">
-      <div class="title">DEEPDELVE</div>
-      <div class="row"><span class="label">Gold</span><span class="val gold" id="goldDisp">0</span></div>
-      <div class="row"><span class="label">Pick</span><span class="val" id="pickDisp">Wood</span></div>
-      <div class="row"><span class="label">Torches</span><span class="val" id="torchDisp">3</span></div>
-      <div class="row"><span class="label">Depth</span><span class="val" id="depthDisp">0m</span></div>
-      <div class="row" style="margin-top:4px;"><span class="label">Mine</span><span class="val" id="mineTarget">—</span>
-      </div>
-      <div class="barwrap">
-        <div class="barfill" id="mineBar"></div>
-      </div>
+                <!-- Chat Container -->
+                <div class="chat-container" id="chatContainer">
+                    <div class="chat-messages" id="chatMessages"></div>
+                    
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="message-avatar">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </div>
+                        <span>Claude is typing</span>
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="search-container">
+                        <textarea class="search-input" id="chatInput" placeholder="Message Claude..." rows="1"></textarea>
+                        <div class="search-actions">
+                            <button class="model-btn" id="chatModelSelector" style="padding: 6px 8px; font-size: 12px;">
+                                <span id="chatCurrentModel">Sonnet 4</span>
+                            </button>
+                            <button class="send-btn" id="chatSendBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="panel" id="shop">
-      <h2>Trading Post</h2>
-      <div class="item">
-        <span class="nm">Sell All Ore<span class="desc">Empty your bag</span></span><button class="btn gold" id="sellBtn">SELL</button>
-      </div>
-      <div class="item">
-        <span class="nm">Stone Pick<span class="desc">Mine iron</span></span><button class="btn" data-buy="stonePick" data-cost="60">60g</button>
-      </div>
-      <div class="item">
-        <span class="nm">Iron Pick<span class="desc">Mine gold</span></span><button class="btn" data-buy="ironPick" data-cost="220">220g</button>
-      </div>
-      <div class="item">
-        <span class="nm">Diamond Pick<span class="desc">Mine gems</span></span><button class="btn" data-buy="diamondPick" data-cost="800">800g</button>
-      </div>
-      <div class="item">
-        <span class="nm">Torch x3<span class="desc">Light the dark</span></span><button class="btn" data-buy="torch3" data-cost="25">25g</button>
-      </div>
-      <div class="item">
-        <span class="nm">Lantern<span class="desc">Always-on light</span></span><button class="btn" data-buy="lantern" data-cost="160">160g</button>
-      </div>
-      <div class="item">
-        <span class="nm">Miner Boots<span class="desc">+30% move speed</span></span><button class="btn" data-buy="boots" data-cost="120">120g</button>
-      </div>
-      <button class="btn close" id="closeShop">Close</button>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <div class="stick" id="stick">
-      <div class="knob" id="knob"></div>
-    </div>
-    <div class="actions">
-      <div class="abtn torch" id="torchBtn">TORCH</div>
-      <div class="abtn mine" id="mineBtn">MINE</div>
-      <div class="abtn shop" id="shopBtn">SHOP</div>
-    </div>
-  </div>
-
-  <div id="title">
-    <h1>DEEPDELVE</h1>
-    <div class="sub">A CAVE MINER</div>
-    <button class="play" id="playBtn">ENTER THE MINE</button>
-    <div class="hint">Left stick to move · MINE to dig · TORCH to light · SHOP to trade<br>Deeper = darker, but richer ore
-    </div>
-  </div>
-
-  <script>
-    "use strict";
-/* =========================================================================
-   DEEPDELVE — custom 2D pixel-art engine
-   - Tile world, procedural cave (cellular automata + entrance + ore veins)
-   - Custom rendering pipeline: world → reflections → lighting(shadows) → glow
-   - Lighting via per-light visibility polygons (raycast against solid tiles)
-   - Pixel-art fallback drawn in code; PNG textures from /textures override
-   - Mining, resources, torches, shop, upgrades. Touch + keyboard controls.
-   ========================================================================= */
-
-/* ---------- Canvas + buffers ---------- */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d', { alpha:false });
-ctx.imageSmoothingEnabled = false;
-
-// offscreen lighting buffers (screen-space)
-const darkCanvas = document.createElement('canvas');   // darkness mask
-const darkCtx = darkCanvas.getContext('2d');
-const glowCanvas = document.createElement('canvas');   // additive color glow
-const glowCtx = glowCanvas.getContext('2d');
-
-function resize(){
-  const dpr = Math.min(window.devicePixelRatio||1, 2);
-  canvas.width = Math.floor(window.innerWidth * dpr);
-  canvas.height = Math.floor(window.innerHeight * dpr);
-  canvas.style.width = window.innerWidth + 'px';
-  canvas.style.height = window.innerHeight + 'px';
-  ctx.imageSmoothingEnabled = false;
-  darkCanvas.width = glowCanvas.width = canvas.width;
-  darkCanvas.height = glowCanvas.height = canvas.height;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  darkCtx.setTransform(dpr,0,0,dpr,0,0);
-  glowCtx.setTransform(dpr,0,0,dpr,0,0);
-}
-window.addEventListener('resize', resize);
-resize();
-
-/* ---------- Config ---------- */
-const TILE = 16;                 // logical px per tile
-const SCALE = 3;                 // screen zoom (16 -> 48px)
-const WORLD_W = 160, WORLD_H = 220;
-const RAY_COUNT = 128;           // light rays per source
-const VIEW_W = () => window.innerWidth;
-const VIEW_H = () => window.innerHeight;
-
-/* Tile IDs */
-const T = {
-  AIR:0, DIRT:1, STONE:2, COPPER:3, IRON:4, GOLD:5, GEM:6,
-  BEDROCK:7, WOOD:8, TORCH:9, GRASS:10
-};
-
-/* Tile defs: hardness(minable power), value when sold, light blocking */
-const TILE_DEF = {
-  [T.AIR]:    {solid:false, light:false, name:'Air'},
-  [T.DIRT]:   {solid:true,  light:true,  hardness:1, value:1,  name:'Dirt'},
-  [T.STONE]:  {solid:true,  light:true,  hardness:2, value:2,  name:'Stone'},
-  [T.COPPER]: {solid:true,  light:true,  hardness:2, value:6,  name:'Copper'},
-  [T.IRON]:   {solid:true,  light:true,  hardness:3, value:14, name:'Iron'},
-  [T.GOLD]:   {solid:true,  light:true,  hardness:4, value:35, name:'Gold'},
-  [T.GEM]:    {solid:true,  light:true,  hardness:5, value:90, name:'Gem'},
-  [T.BEDROCK]:{solid:true,  light:true,  hardness:99,value:0,  name:'Bedrock'},
-  [T.WOOD]:   {solid:false, light:false, hardness:0, value:0,  name:'Floor'},
-  [T.TORCH]:  {solid:false, light:false, hardness:0, value:0,  name:'Torch'},
-  [T.GRASS]:  {solid:true,  light:true,  hardness:1, value:1,  name:'Grass'},
-};
-
-/* Texture manifest: PNG in textures/ folder. Missing -> code fallback. */
-const TEX = {
-  dirt:'textures/dirt.png', stone:'textures/stone.png',
-  copper:'textures/copper.png', iron:'textures/iron.png',
-  gold:'textures/gold.png', gem:'textures/gem.png',
-  bedrock:'textures/bedrock.png', wood:'textures/wood.png',
-  torch:'textures/torch_placed.png', player:'textures/player.png',
-  coin:'textures/coin.png', ui:'textures/ui_button.png'
-};
-const textures = {};
-
-function loadTexture(name, url){
-  return new Promise(res=>{
-    const img = new Image();
-    img.onload = ()=>{ textures[name]=img; res(true); };
-    img.onerror = ()=>res(false);
-    img.src = url;
-  });
-}
-async function initTextures(){
-  await Promise.all(Object.entries(TEX).map(([n,u])=>loadTexture(n,u)));
-}
-
-/* ---------- Utils ---------- */
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const lerp=(a,b,t)=>a+(b-a)*t;
-const rand=(a,b)=>a+Math.random()*(b-a);
-const randInt=(a,b)=>Math.floor(rand(a,b+1));
-const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-const dist2=(x1,y1,x2,y2)=>{const dx=x2-x1,dy=y2-y1;return dx*dx+dy*dy;};
-
-/* ---------- Procedural pixel-art tile drawing (fallback) ---------- */
-// deterministic noise per tile coordinate so each tile looks stable
-function hash2(x,y){
-  let h = x*374761393 + y*668265263;
-  h = (h ^ (h>>13)) * 1274126177;
-  return ((h ^ (h>>16)) >>> 0) / 4294967295;
-}
-// draw a 16x16 dirt-like tile with speckles + bevel
-function paintTile(ctx2, tile, sx, sy, size){
-  const def = TILE_DEF[tile];
-  const baseColors = {
-    [T.DIRT]:'#6b4a2e', [T.STONE]:'#5d6470', [T.COPPER]:'#5a5b5e',
-    [T.IRON]:'#6a7079', [T.GOLD]:'#6a6258', [T.GEM]:'#465055',
-    [T.BEDROCK]:'#3a3f47', [T.WOOD]:'#7a5a36', [T.GRASS]:'#3f5e2a'
-  };
-  const oreColors = {
-    [T.COPPER]:'#c8753f', [T.IRON]:'#c7d0da', [T.GOLD]:'#f5c542',
-    [T.GEM]:'#7be0d4'
-  };
-  const base = baseColors[tile] || '#555';
-  ctx2.fillStyle = base;
-  ctx2.fillRect(sx,sy,size,size);
-
-  // speckle noise (stable per tile)
-  const px = size / TILE;
-  for(let y=0;y<TILE;y++){
-    for(let x=0;x<TILE;x++){
-      const n = hash2(tile*97+x, y*13+ (tile*7));
-      if(n>0.82){
-        ctx2.fillStyle = 'rgba(0,0,0,0.18)';
-        ctx2.fillRect(sx+x*px, sy+y*px, px, px);
-      } else if(n<0.12){
-        ctx2.fillStyle = 'rgba(255,255,255,0.10)';
-        ctx2.fillRect(sx+x*px, sy+y*px, px, px);
-      }
-    }
-  }
-  // ore flecks
-  if(oreColors[tile]){
-    ctx2.fillStyle = oreColors[tile];
-    for(let i=0;i<5;i++){
-      const n=hash2(tile*31+i, i*7+3);
-      const ox=Math.floor(n*TILE)*px, oy=Math.floor(hash2(i*5+tile,i)*TILE)*px;
-      ctx2.fillRect(sx+ox,sy+oy,px*2,px*2);
-      ctx2.fillStyle='rgba(255,255,255,0.35)';
-      ctx2.fillRect(sx+ox,sy+oy,px,px);
-      ctx2.fillStyle = oreColors[tile];
-    }
-  }
-  // bevel: top/left highlight, bottom/right shadow
-  ctx2.fillStyle='rgba(255,255,255,0.10)';
-  ctx2.fillRect(sx, sy, size, Math.max(1,size*0.12));
-  ctx2.fillRect(sx, sy, Math.max(1,size*0.12), size);
-  ctx2.fillStyle='rgba(0,0,0,0.30)';
-  ctx2.fillRect(sx, sy+size-Math.max(1,size*0.12), size, Math.max(1,size*0.12));
-  ctx2.fillRect(sx+size-Math.max(1,size*0.12), sy, Math.max(1,size*0.12), size);
-}
-
-// pre-render each tile type to a small offscreen canvas (cache) for speed
-const tileCache = {};
-function getTileSprite(tile){
-  if(tileCache[tile]) return tileCache[tile];
-  const c = document.createElement('canvas');
-  c.width = c.height = TILE*2; // render at 2x for crispness
-  const cc = c.getContext('2d');
-  cc.imageSmoothingEnabled=false;
-  paintTile(cc, tile, 0, 0, TILE*2);
-  tileCache[tile]=c;
-  return c;
-}
-
-function drawTileSprite(screenX, screenY, size, tile){
-  // texture override
-  const texKey = ['dirt','stone','copper','iron','gold','gem','bedrock','wood','torch'][[T.DIRT,T.STONE,T.COPPER,T.IRON,T.GOLD,T.GEM,T.BEDROCK,T.WOOD,T.TORCH].indexOf(tile)];
-  if(texKey && textures[texKey]){
-    ctx.drawImage(textures[texKey], screenX, screenY, size, size);
-    return;
-  }
-  const sprite = getTileSprite(tile);
-  if(sprite) ctx.drawImage(sprite, screenX, screenY, size, size);
-  else { ctx.fillStyle='#444'; ctx.fillRect(screenX,screenY,size,size); }
-}
-
-/* ---------- World ---------- */
-let world = new Uint8Array(WORLD_W*WORLD_H);
-const idx=(x,y)=>y*WORLD_W+x;
-function inBounds(x,y){return x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H;}
-function getTile(x,y){
-  if(!inBounds(x,y)) return T.BEDROCK;
-  return world[idx(x,y)];
-}
-function setTile(x,y,t){ if(inBounds(x,y)) world[idx(x,y)]=t; }
-
-function generateWorld(){
-  // 1. random fill, denser/deeper as you go down
-  for(let y=0;y<WORLD_H;y++){
-    for(let x=0;x<WORLD_W;x++){
-      const depthFactor = y / WORLD_H;            // 0..1
-      const fill = 0.40 + depthFactor*0.12;
-      world[idx(x,y)] = Math.random()<fill ? T.STONE : T.AIR;
-    }
-  }
-  // 2. cellular automata smoothing
-  for(let it=0; it<5; it++){
-    const next = world.slice();
-    for(let y=1;y<WORLD_H-1;y++){
-      for(let x=1;x<WORLD_W-1;x++){
-        let walls=0;
-        for(let dy=-1;dy<=1;dy++)
-          for(let dx=-1;dx<=1;dx++)
-            if(!(dx===0&&dy===0) && world[idx(x+dx,y+dy)]!==T.AIR) walls++;
-        next[idx(x,y)] = walls>4 ? T.STONE : walls<4 ? T.AIR : world[idx(x,y)];
-      }
-    }
-    world = next;
-  }
-  // 3. top surface = grass + dirt
-  for(let x=0;x<WORLD_W;x++){
-    let groundY=-1;
-    for(let y=0;y<WORLD_H;y++){ if(world[idx(x,y)]===T.STONE){ groundY=y; break; } }
-    if(groundY>0 && groundY<WORLD_H-3){
-      setTile(x,groundY-1,T.GRASS);
-      for(let y=groundY;y<Math.min(groundY+3,WORLD_H);y++) setTile(x,y,T.DIRT);
-    }
-  }
-  // 4. entrance: carve a vertical shaft from surface into the cave
-  const entX = Math.floor(WORLD_W*0.5);
-  let ey = 0;
-  for(let y=0;y<WORLD_H;y++){
-    if(getTile(entX,y)===T.STONE || getTile(entX,y)===T.GRASS || getTile(entX,y)===T.DIRT){ ey=y; break; }
-  }
-  for(let y=ey; y<ey+12; y++){
-    for(let dx=-2;dx<=2;dx++) setTile(entX+dx, y, T.AIR);
-  }
-  // wood platform / shop floor at entrance
-  for(let dx=-3;dx<=3;dx++) setTile(entX+dx, ey, T.WOOD);
-  setTile(entX-3, ey, T.WOOD); setTile(entX+3, ey, T.WOOD);
-  // place an entrance torch
-  setTile(entX, ey-1, T.TORCH);
-  // 5. ore veins by depth
-  for(let y=2;y<WORLD_H-1;y++){
-    for(let x=1;x<WORLD_W-1;x++){
-      const t = world[idx(x,y)];
-      if(t===T.STONE){
-        const d = y / WORLD_H;
-        const r = Math.random();
-        if(d>0.55 && r<0.012) world[idx(x,y)]=T.GEM;
-        else if(d>0.40 && r<0.05) world[idx(x,y)]=T.GOLD;
-        else if(d>0.25 && r<0.10) world[idx(x,y)]=T.IRON;
-        else if(r<0.14) world[idx(x,y)]=T.COPPER;
-      }
-    }
-  }
-  // 6. bedrock floor + walls
-  for(let x=0;x<WORLD_W;x++){ setTile(x,WORLD_H-1,T.BEDROCK); setTile(x,WORLD_H-2,T.BEDROCK); }
-  for(let y=0;y<WORLD_H;y++){ setTile(0,y,T.BEDROCK); setTile(WORLD_W-1,y,T.BEDROCK); }
-
-  return { entX, entY: ey };
-}
-
-/* ---------- Game state ---------- */
-const GAME = {
-  state:'title',  // title | play
-  cam:{x:0,y:0},
-  player:{
-    x:0,y:0, w:10,h:13, vx:0,vy:0,
-    speed:62, gold:0, pick:0, torches:3,
-    lantern:false, boots:false, facing:1,
-    bag:{},  // ore type -> count, to sell
-  },
-  lights:[],          // dynamic light sources
-  particles:[],
-  floatTexts:[],
-  mining:null,        // {tx,ty,prog,need}
-  entrance:{entX:0,entY:0},
-  shopOpen:false,
-  time:0,
-};
-const PICK_NAMES=['Wood','Stone','Iron','Diamond'];
-const PICK_POWER=[1,2,3,4];
-
-/* ---------- Lighting engine ---------- */
-// world -> screen
-function w2sX(wx){ return (wx - GAME.cam.x)*SCALE; }
-function w2sY(wy){ return (wy - GAME.cam.y)*SCALE; }
-function s2wX(sx){ return sx/SCALE + GAME.cam.x; }
-function s2wY(sy){ return sy/SCALE + GAME.cam.y; }
-
-// raycast from (wx,wy) at angle; returns distance (in world px) until a solid tile
-function castRay(wx, wy, ang, maxDist){
-  const dx=Math.cos(ang), dy=Math.sin(ang);
-  const step=1.5;
-  let d=step*0.5;            // start inside the source tile, not on its edge
-  while(d<maxDist){
-    const x=wx+dx*d, y=wy+dy*d;
-    const tx=Math.floor(x/TILE), ty=Math.floor(y/TILE);
-    const t=getTile(tx,ty);
-    if(TILE_DEF[t] && TILE_DEF[t].light) return d;   // blocked by solid
-    d+=step;
-  }
-  return maxDist;
-}
-
-// build visibility polygon for a light, return array of [sx,sy] screen points
-function lightPolygon(light){
-  if(light._poly && light._frame===GAME._frame) return light._poly;  // cache per frame
-  const wx=light.x, wy=light.y;
-  const maxR=light.r;
-  const pts=[];
-  const baseAng = light.spin || 0;
-  for(let i=0;i<=RAY_COUNT;i++){
-    const ang = baseAng + (i/RAY_COUNT)*Math.PI*2;
-    const d = castRay(wx,wy,ang,maxR);
-    const hx = wx+Math.cos(ang)*d, hy=wy+Math.sin(ang)*d;
-    pts.push([w2sX(hx), w2sY(hy)]);
-  }
-  light._poly=pts; light._frame=GAME._frame;
-  return pts;
-}
-
-function renderLighting(){
-  // 1. darkness mask: dark everywhere, then cut holes where lights reach
-  const W=VIEW_W(), H=VIEW_H();
-  darkCtx.clearRect(0,0,W,H);
-  // ambient darkness depends on depth (deeper = darker base)
-  const depthDark = clamp(0.55 + (GAME.player.y/(WORLD_H*TILE))*0.35, 0.55, 0.92);
-  darkCtx.fillStyle = `rgba(2,4,8,${depthDark})`;
-  darkCtx.fillRect(0,0,W,H);
-
-  // cut light holes (destination-out = erase darkness)
-  darkCtx.globalCompositeOperation='destination-out';
-  for(const L of GAME.lights){
-    const poly = lightPolygon(L);
-    darkCtx.beginPath();
-    darkCtx.moveTo(poly[0][0], poly[0][1]);
-    for(let i=1;i<poly.length;i++) darkCtx.lineTo(poly[i][0], poly[i][1]);
-    darkCtx.closePath();
-    // radial gradient so edges of the hole fade (soft shadows)
-    const cx=w2sX(L.x), cy=w2sY(L.y);
-    const r = L.r*SCALE;
-    const g = darkCtx.createRadialGradient(cx,cy,r*0.15, cx,cy,r);
-    g.addColorStop(0,'rgba(0,0,0,1)');
-    g.addColorStop(0.7,'rgba(0,0,0,0.9)');
-    g.addColorStop(1,'rgba(0,0,0,0)');
-    darkCtx.fillStyle=g;
-    darkCtx.fill();
-  }
-  darkCtx.globalCompositeOperation='source-over';
-
-  // 2. additive colored glow
-  glowCtx.clearRect(0,0,W,H);
-  glowCtx.globalCompositeOperation='lighter';
-  for(const L of GAME.lights){
-    const cx=w2sX(L.x), cy=w2sY(L.y);
-    const r=L.r*SCALE;
-    const g=glowCtx.createRadialGradient(cx,cy,0, cx,cy,r);
-    const col=L.color||[255,200,120];
-    const a=L.intensity||0.5;
-    g.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},${a})`);
-    g.addColorStop(0.5,`rgba(${col[0]},${col[1]},${col[2]},${a*0.4})`);
-    g.addColorStop(1, `rgba(${col[0]},${col[1]},${col[2]},0)`);
-    glowCtx.fillStyle=g;
-    // clip glow to the visibility polygon so it respects shadows
-    const poly=lightPolygon(L);
-    glowCtx.save();
-    glowCtx.beginPath();
-    glowCtx.moveTo(poly[0][0],poly[0][1]);
-    for(let i=1;i<poly.length;i++) glowCtx.lineTo(poly[i][0],poly[i][1]);
-    glowCtx.closePath();
-    glowCtx.clip();
-    glowCtx.fillRect(cx-r,cy-r,r*2,r*2);
-    glowCtx.restore();
-  }
-  glowCtx.globalCompositeOperation='source-over';
-
-  // 3. composite: darkness over scene (multiply feel via source-over alpha)
-  ctx.drawImage(darkCanvas,0,0,W,H);
-  // additive glow tint on top
-  ctx.globalCompositeOperation='lighter';
-  ctx.drawImage(glowCanvas,0,0,W,H);
-  ctx.globalCompositeOperation='source-over';
-
-  // 4. vignette
-  const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3, W/2,H/2,Math.max(W,H)*0.75);
-  vg.addColorStop(0,'rgba(0,0,0,0)');
-  vg.addColorStop(1,'rgba(0,0,0,0.45)');
-  ctx.fillStyle=vg;
-  ctx.fillRect(0,0,W,H);
-}
-
-/* ---------- Player + physics ---------- */
-function collides(x,y){
-  const p=GAME.player;
-  const left=Math.floor(x/TILE), right=Math.floor((x+p.w-1)/TILE);
-  const top=Math.floor(y/TILE), bottom=Math.floor((y+p.h-1)/TILE);
-  for(let ty=top;ty<=bottom;ty++)
-    for(let tx=left;tx<=right;tx++){
-      const t=getTile(tx,ty);
-      if(TILE_DEF[t] && TILE_DEF[t].solid) return true;
-    }
-  return false;
-}
-
-function updatePlayer(dt){
-  const p=GAME.player;
-  let ax=GAME.input.stickX, ay=GAME.input.stickY;
-  const len=Math.hypot(ax,ay);
-  if(len>1){ ax/=len; ay/=len; }
-  const spd = p.speed * (p.boots?1.3:1);
-  p.vx = ax*spd;
-  p.vy = ay*spd;
-  if(Math.abs(ax)>0.1) p.facing = ax>0?1:-1;
-
-  // move axis-separately for clean collisions
-  let nx=p.x + p.vx*dt;
-  if(!collides(nx,p.y)) p.x=nx;
-  let ny=p.y + p.vy*dt;
-  if(!collides(p.x,ny)) p.y=ny;
-
-  // clamp to world
-  p.x = clamp(p.x, 0, WORLD_W*TILE - p.w);
-  p.y = clamp(p.y, 0, WORLD_H*TILE - p.h);
-
-  // camera follow (smoothed)
-  const tx = p.x + p.w/2 - (VIEW_W()/SCALE)/2;
-  const ty = p.y + p.h/2 - (VIEW_H()/SCALE)/2;
-  GAME.cam.x += (tx-GAME.cam.x)*0.14;
-  GAME.cam.y += (ty-GAME.cam.y)*0.14;
-  GAME.cam.x = clamp(GAME.cam.x, 0, WORLD_W*TILE - VIEW_W()/SCALE);
-  GAME.cam.y = clamp(GAME.cam.y, 0, WORLD_H*TILE - VIEW_H()/SCALE);
-}
-
-/* ---------- Mining ---------- */
-function targetTileInFront(){
-  const p=GAME.player;
-  const cx=Math.floor((p.x+p.w/2)/TILE);
-  const cy=Math.floor((p.y+p.h/2)/TILE);
-  // prefer facing direction, then any adjacent solid
-  const order=[];
-  if(Math.abs(GAME.input.stickX)>Math.abs(GAME.input.stickY)){
-    const d=GAME.input.stickX>=0?1:-1;
-    order.push([cx+d,cy]);
-  } else if(Math.abs(GAME.input.stickY)>0.1){
-    const d=GAME.input.stickY>=0?1:-1;
-    order.push([cx,cy+d]);
-  }
-  order.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1],[cx+p.facing,cy]);
-  for(const [tx,ty] of order){
-    const t=getTile(tx,ty);
-    if(TILE_DEF[t] && TILE_DEF[t].solid && t!==T.BEDROCK) return {tx,ty,t};
-  }
-  return null;
-}
-
-function startOrContinueMine(){
-  const tgt = targetTileInFront();
-  if(!tgt){ GAME.mining=null; updateMineBar(); return; }
-  if(!GAME.mining || GAME.mining.tx!==tgt.tx || GAME.mining.ty!==tgt.ty){
-    const def=TILE_DEF[tgt.t];
-    const need = def.hardness * 0.55;   // seconds
-    GAME.mining = {tx:tgt.tx, ty:tgt.ty, t:tgt.t, prog:0, need};
-  }
-  document.getElementById('mineTarget').textContent = TILE_DEF[tgt.t].name;
-}
-
-function tickMining(dt){
-  if(GAME.input.mineHeld){
-    startOrContinueMine();
-    if(GAME.mining){
-      const power=PICK_POWER[GAME.player.pick];
-      const def=TILE_DEF[GAME.mining.t];
-      if(power < def.hardness){
-        toast(`${TILE_DEF[GAME.mining.t].name} too hard for ${PICK_NAMES[GAME.player.pick]} pick`);
-        GAME.mining=null; updateMineBar(); return;
-      }
-      // mining speed scales with pick power
-      GAME.mining.prog += dt * (0.6 + power*0.25);
-      if(GAME.mining.prog >= GAME.mining.need){
-        breakTile(GAME.mining.tx, GAME.mining.ty, GAME.mining.t);
-        GAME.mining=null;
-      }
-    }
-  } else {
-    if(GAME.mining) GAME.mining.prog = Math.max(0, GAME.mining.prog - dt*0.5);
-    if(GAME.mining && GAME.mining.prog<=0) GAME.mining=null;
-  }
-  updateMineBar();
-}
-function updateMineBar(){
-  const bar=document.getElementById('mineBar');
-  bar.style.width = (GAME.mining ? (GAME.mining.prog/GAME.mining.need*100) : 0) + '%';
-}
-
-function breakTile(tx,ty,t){
-  setTile(tx,ty,T.AIR);
-  const def=TILE_DEF[t];
-  // resource into bag
-  if(t>=T.COPPER && t<=T.GEM){
-    GAME.player.bag[t] = (GAME.player.bag[t]||0)+1;
-  } else {
-    GAME.player.gold += def.value;
-  }
-  // custom debris: sample chunks from the tile's own sprite and shrink them
-  spawnDebris((tx+0.5)*TILE,(ty+0.5)*TILE,t);
-  if(t>=T.COPPER && t<=T.GEM){
-    for(let i=0;i<8;i++) spawnSpark((tx+0.5)*TILE,(ty+0.5)*TILE, defColor(t));
-  }
-  floatText('+'+def.value+'g', (tx+0.5)*TILE, ty*TILE, defColor(t));
-  sfx('mine');
-  updateHUD();
-}
-function defColor(t){
-  return ({[T.DIRT]:'#8a6a44',[T.STONE]:'#9aa4b0',[T.COPPER]:'#c8753f',[T.IRON]:'#c7d0da',[T.GOLD]:'#f5c542',[T.GEM]:'#7be0d4',[T.GRASS]:'#5a8a3a'})[t]||'#888';
-}
-
-/* ---------- Torches ---------- */
-function placeTorch(){
-  const p=GAME.player;
-  if(p.torches<=0){ toast('No torches left — buy some at the shop'); sfx('no'); return; }
-  const cx=Math.floor((p.x+p.w/2)/TILE), cy=Math.floor((p.y+p.h/2)/TILE);
-  const dirs=[[p.facing,0],[-p.facing,0],[0,1],[0,-1],[1,0],[-1,0]];
-  for(const [dx,dy] of dirs){
-    const tx=cx+dx, ty=cy+dy;
-    if(getTile(tx,ty)===T.AIR){
-      // place on adjacent solid wall if possible
-      setTile(tx,ty,T.TORCH);
-      addLight({x:(tx+0.5)*TILE, y:(ty+0.5)*TILE, r:TILE*7, color:[255,160,70], intensity:0.55, flicker:true});
-      p.torches--; updateHUD(); sfx('torch');
-      for(let i=0;i<6;i++) spawnParticle((tx+0.5)*TILE,(ty+0.3)*TILE, rand(-20,20), rand(-40,-10), 0.5, '#ff8a3d', 2);
-      return;
-    }
-  }
-  toast('No open space for a torch here');
-  sfx('no');
-}
-
-function addLight(L){
-  if(L.spin===undefined) L.spin = 0;   // stable orientation: no per-frame rotation (kills shimmer)
-  GAME.lights.push(L);
-}
-
-/* ---------- Shop / economy ---------- */
-const SHOP = {
-  stonePick:{cost:60,  pick:1},
-  ironPick:{cost:220,  pick:2},
-  diamondPick:{cost:800, pick:3},
-  torch3:{cost:25, torches:3},
-  lantern:{cost:160, lantern:true},
-  boots:{cost:120, boots:true},
-};
-function sellAll(){
-  let total=0, count=0;
-  for(const k in GAME.player.bag){
-    const t=parseInt(k,10);
-    total += TILE_DEF[t].value * GAME.player.bag[k];
-    count += GAME.player.bag[k];
-  }
-  if(count===0){ toast('Bag is empty — mine some ore first'); sfx('no'); return; }
-  GAME.player.gold += total;
-  GAME.player.bag={};
-  toast(`Sold ${count} ore for ${total}g`);
-  sfx('coin');
-  updateHUD();
-}
-function buyItem(key){
-  const def=SHOP[key]; if(!def) return;
-  if(GAME.player.gold < def.cost){ toast('Not enough gold'); sfx('no'); return; }
-  GAME.player.gold -= def.cost;
-  if(def.pick!==undefined) GAME.player.pick = Math.max(GAME.player.pick, def.pick);
-  if(def.torches) GAME.player.torches += def.torches;
-  if(def.lantern) GAME.player.lantern = true;
-  if(def.boots) GAME.player.boots = true;
-  toast(`Bought ${prettyItem(key)}`);
-  sfx('coin');
-  updateHUD();
-}
-function prettyItem(k){return {stonePick:'Stone Pick',ironPick:'Iron Pick',diamondPick:'Diamond Pick',torch3:'3 Torches',lantern:'Lantern',boots:'Miner Boots'}[k]||k;}
-
-/* ---------- Particles + float text ---------- */
-/* ---------- Custom particle engine ----------
-   Debris = cropped chunks of the broken tile's own sprite (texture PNG or
-   code-drawn fallback), shrinking + rotating + falling. Plus dust + ore sparks.
-   Fully custom canvas rendering — no libraries. */
-function tileSourceFor(t){
-  const map={[T.DIRT]:'dirt',[T.STONE]:'stone',[T.COPPER]:'copper',[T.IRON]:'iron',[T.GOLD]:'gold',[T.GEM]:'gem',[T.BEDROCK]:'bedrock',[T.WOOD]:'wood',[T.GRASS]:'grass'};
-  const key=map[t];
-  if(key && textures[key]) return {img:textures[key], sw:16, sh:16};
-  const sp=getTileSprite(t); return {img:sp, sw:sp.width, sh:sp.height};
-}
-function spawnDebris(wx,wy,t){
-  const src=tileSourceFor(t);
-  const unit=(TILE*SCALE)/src.sw;   // screen px per source px
-  const n=16;
-  for(let i=0;i<n;i++){
-    const cw=randInt(3,7), ch=randInt(3,7);
-    const ox=randInt(0,Math.max(1,src.sw-cw)), oy=randInt(0,Math.max(1,src.sh-ch));
-    const ang=rand(0,Math.PI*2), spd=rand(40,150);
-    GAME.particles.push({
-      x:wx+rand(-4,4), y:wy+rand(-4,4),
-      vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd - rand(20,90),
-      rot:rand(0,Math.PI*2), vr:rand(-8,8),
-      life:rand(0.5,1.0), max:1.0,
-      src:src.img, sx:ox, sy:oy, sw:cw, sh:ch, unit:unit, isDebris:true
-    });
-  }
-  // dust puff
-  for(let i=0;i<6;i++){
-    const ang=rand(0,Math.PI*2), spd=rand(10,40);
-    GAME.particles.push({x:wx,y:wy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-rand(0,30),life:rand(0.3,0.6),max:0.6,color:'rgba(180,170,150,0.5)',isDust:true,size:rand(2,4)});
-  }
-}
-function spawnSpark(wx,wy,color){
-  const ang=rand(0,Math.PI*2), spd=rand(60,180);
-  GAME.particles.push({x:wx,y:wy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-rand(30,80),life:rand(0.4,0.8),max:0.8,color:color,isSpark:true,size:rand(1.5,3)});
-}
-function updateParticles(dt){
-  for(let i=GAME.particles.length-1;i>=0;i--){
-    const p=GAME.particles[i];
-    p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=150*dt; p.vx*=0.98;
-    if(p.rot!==undefined) p.rot+=p.vr*dt;
-    p.life-=dt;
-    if(p.life<=0) GAME.particles.splice(i,1);
-  }
-}
-function drawParticles(){
-  for(const p of GAME.particles){
-    const a=clamp(p.life/p.max,0,1);
-    if(p.isDebris){
-      const drawSize=p.sw*p.unit*(0.3+0.7*a);   // shrink as it dies
-      ctx.globalAlpha=a;
-      ctx.save();
-      ctx.translate(w2sX(p.x),w2sY(p.y));
-      ctx.rotate(p.rot);
-      ctx.drawImage(p.src,p.sx,p.sy,p.sw,p.sh,-drawSize/2,-drawSize/2,drawSize,drawSize);
-      ctx.restore();
-    } else if(p.isSpark){
-      ctx.globalAlpha=a;
-      ctx.globalCompositeOperation='lighter';
-      ctx.fillStyle=p.color;
-      const s=p.size*SCALE*0.4*a;
-      ctx.beginPath(); ctx.arc(w2sX(p.x),w2sY(p.y),s,0,Math.PI*2); ctx.fill();
-      ctx.globalCompositeOperation='source-over';
-    } else {
-      ctx.globalAlpha=a*0.6;
-      ctx.fillStyle=p.color||'#aaa';
-      const s=p.size*SCALE*0.3*a;
-      ctx.beginPath(); ctx.arc(w2sX(p.x),w2sY(p.y),s,0,Math.PI*2); ctx.fill();
-    }
-  }
-  ctx.globalAlpha=1;
-}
-
-/* ---------- Mining target indicator: a smooth wobbling 'tongue' ---------- */
-function drawMineIndicator(){
-  const tgt=targetTileInFront();
-  if(!tgt) return;
-  const p=GAME.player;
-  const x0=w2sX(p.x+p.w/2), y0=w2sY(p.y+p.h*0.45);
-  const x1=w2sX((tgt.tx+0.5)*TILE), y1=w2sY((tgt.ty+0.5)*TILE);
-  const t=GAME.time;
-  const mx=(x0+x1)/2, my=(y0+y1)/2;
-  let nx=-(y1-y0), ny=(x1-x0); const nl=Math.hypot(nx,ny)||1; nx/=nl; ny/=nl;
-  const wob=Math.sin(t*5)*7;
-  const cpx=mx+nx*wob, cpy=my+ny*wob;
-  ctx.save();
-  ctx.lineCap='round'; ctx.lineJoin='round';
-  // outer glow
-  ctx.strokeStyle='rgba(255,170,60,0.22)';
-  ctx.lineWidth=12;
-  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.quadraticCurveTo(cpx,cpy,x1,y1); ctx.stroke();
-  // tongue body
-  ctx.strokeStyle='rgba(255,200,110,0.85)';
-  ctx.lineWidth=4+Math.sin(t*7)*0.8;
-  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.quadraticCurveTo(cpx,cpy,x1,y1); ctx.stroke();
-  // bright core
-  ctx.strokeStyle='rgba(255,245,210,0.9)';
-  ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.quadraticCurveTo(cpx,cpy,x1,y1); ctx.stroke();
-  // tip dot
-  ctx.fillStyle='#fff2c0';
-  ctx.beginPath(); ctx.arc(x1,y1,3+Math.sin(t*7)*0.8,0,Math.PI*2); ctx.fill();
-  // pulsing reticle + corner ticks on target tile
-  const size=TILE*SCALE;
-  const sx=Math.floor((tgt.tx*TILE-GAME.cam.x)*SCALE), sy=Math.floor((tgt.ty*TILE-GAME.cam.y)*SCALE);
-  const pulse=0.5+0.5*Math.sin(t*4);
-  ctx.strokeStyle=`rgba(255,220,120,${0.4+0.5*pulse})`;
-  ctx.lineWidth=2;
-  const pad=2+1*pulse;
-  ctx.strokeRect(sx+pad, sy+pad, size-pad*2, size-pad*2);
-  const tk=5;
-  ctx.beginPath();
-  ctx.moveTo(sx,sy+tk); ctx.lineTo(sx,sy); ctx.lineTo(sx+tk,sy);
-  ctx.moveTo(sx+size-tk,sy); ctx.lineTo(sx+size,sy); ctx.lineTo(sx+size,sy+tk);
-  ctx.moveTo(sx+size,sy+size-tk); ctx.lineTo(sx+size,sy+size); ctx.lineTo(sx+size-tk,sy+size);
-  ctx.moveTo(sx,sy+size-tk); ctx.lineTo(sx,sy+size); ctx.lineTo(sx+tk,sy+size);
-  ctx.stroke();
-  ctx.restore();
-}
-function floatText(text,x,y,color){
-  GAME.floatTexts.push({text,x,y,life:1,color:color||'#fff'});
-}
-function updateFloats(dt){
-  for(let i=GAME.floatTexts.length-1;i>=0;i--){
-    const f=GAME.floatTexts[i]; f.y-=18*dt; f.life-=dt;
-    if(f.life<=0) GAME.floatTexts.splice(i,1);
-  }
-}
-function drawFloats(){
-  ctx.textAlign='center';
-  ctx.font=`${10}px 'Press Start 2P', monospace`;
-  for(const f of GAME.floatTexts){
-    ctx.globalAlpha=clamp(f.life,0,1);
-    ctx.fillStyle='rgba(0,0,0,0.8)';
-    ctx.fillText(f.text, w2sX(f.x)+1, w2sY(f.y)+1);
-    ctx.fillStyle=f.color;
-    ctx.fillText(f.text, w2sX(f.x), w2sY(f.y));
-  }
-  ctx.globalAlpha=1;
-  ctx.textAlign='left';
-}
-
-/* ---------- Reflections (wet-floor style) ---------- */
-function drawReflections(){
-  // mirror torches + player glow downward onto the tile below, low alpha
-  ctx.save();
-  ctx.globalAlpha=0.18;
-  ctx.globalCompositeOperation='lighter';
-  // player reflection
-  const p=GAME.player;
-  const sx=w2sX(p.x), sy=w2sY(p.y), w=p.w*SCALE, h=p.h*SCALE;
-  ctx.save();
-  ctx.translate(0, sy*2 + h);
-  ctx.scale(1,-1);
-  ctx.fillStyle='#3a6a8a';
-  ctx.fillRect(sx, sy, w, h);
-  ctx.restore();
-  ctx.restore();
-}
-
-/* ---------- Rendering ---------- */
-function drawPlayer(){
-  const p=GAME.player;
-  const sx=Math.floor(w2sX(p.x)), sy=Math.floor(w2sY(p.y));
-  const w=p.w*SCALE, h=p.h*SCALE;
-  if(textures.player){
-    ctx.save();
-    if(p.facing<0){ ctx.scale(-1,1); ctx.drawImage(textures.player, -sx-w, sy, w, h); }
-    else ctx.drawImage(textures.player, sx, sy, w, h);
-    ctx.restore();
-  } else {
-    // code-drawn miner
-    // body
-    ctx.fillStyle='#3a4a5a'; ctx.fillRect(sx+w*0.15, sy+h*0.3, w*0.7, h*0.55);
-    // head
-    ctx.fillStyle='#e0b58a'; ctx.fillRect(sx+w*0.25, sy+h*0.05, w*0.5, h*0.3);
-    // helmet
-    ctx.fillStyle='#c8902a'; ctx.fillRect(sx+w*0.2, sy+h*0.02, w*0.6, h*0.16);
-    // lamp on helmet
-    ctx.fillStyle='#ffe08a'; ctx.fillRect(sx+w*0.55, sy+h*0.08, w*0.14, h*0.1);
-    // legs
-    ctx.fillStyle='#2a3340'; ctx.fillRect(sx+w*0.2, sy+h*0.82, w*0.25, h*0.18);
-    ctx.fillRect(sx+w*0.55, sy+h*0.82, w*0.25, h*0.18);
-    // pick in hand (facing)
-    ctx.fillStyle='#9aa4b0';
-    if(p.facing>0) ctx.fillRect(sx+w*0.8, sy+h*0.4, w*0.2, h*0.08);
-    else ctx.fillRect(sx, sy+h*0.4, w*0.2, h*0.08);
-  }
-  // subtle shadow under player
-  ctx.fillStyle='rgba(0,0,0,0.35)';
-  ctx.beginPath();
-  ctx.ellipse(sx+w/2, sy+h-2, w*0.4, h*0.12, 0, 0, Math.PI*2);
-  ctx.fill();
-}
-
-function drawTorchTile(tx,ty,size){
-  const sx=tx*size, sy=ty*size;
-  if(textures.torch){ ctx.drawImage(textures.torch, sx, sy, size, size); return; }
-  // stick
-  ctx.fillStyle='#5a3a22';
-  ctx.fillRect(sx+size*0.45, sy+size*0.4, size*0.1, size*0.6);
-  // flame (animated)
-  const fl = 1 + Math.sin(GAME.time*12 + tx*1.7)*0.15;
-  ctx.fillStyle='#ff8a3d';
-  ctx.beginPath();
-  ctx.ellipse(sx+size*0.5, sy+size*0.32, size*0.18*fl, size*0.26*fl, 0, 0, Math.PI*2);
-  ctx.fill();
-  ctx.fillStyle='#ffe08a';
-  ctx.beginPath();
-  ctx.ellipse(sx+size*0.5, sy+size*0.34, size*0.1*fl, size*0.14*fl, 0, 0, Math.PI*2);
-  ctx.fill();
-}
-
-function renderWorld(){
-  const W=VIEW_W(), H=VIEW_H();
-  ctx.fillStyle='#070a0e';
-  ctx.fillRect(0,0,W,H);
-
-  const size=TILE*SCALE;
-  const startX=Math.floor(GAME.cam.x/TILE)-1;
-  const startY=Math.floor(GAME.cam.y/TILE)-1;
-  const endX=Math.ceil((GAME.cam.x + W/SCALE)/TILE)+1;
-  const endY=Math.ceil((GAME.cam.y + H/SCALE)/TILE)+1;
-
-  for(let ty=Math.max(0,startY); ty<=Math.min(WORLD_H-1,endY); ty++){
-    for(let tx=Math.max(0,startX); tx<=Math.min(WORLD_W-1,endX); tx++){
-      const t=getTile(tx,ty);
-      if(t===T.AIR) continue;
-      const sx=Math.floor((tx*TILE - GAME.cam.x)*SCALE);
-      const sy=Math.floor((ty*TILE - GAME.cam.y)*SCALE);
-      if(t===T.TORCH){ drawTorchTile(tx,ty,size); }
-      else drawTileSprite(sx,sy,size,t);
-
-      // mining crack overlay
-      if(GAME.mining && GAME.mining.tx===tx && GAME.mining.ty===ty){
-        const prog=GAME.mining.prog/GAME.mining.need;
-        ctx.strokeStyle=`rgba(0,0,0,${0.5*prog})`;
-        ctx.lineWidth=1+prog*2;
-        const cx=sx+size/2, cy=sy+size/2;
-        ctx.beginPath();
-        ctx.moveTo(sx+2,sy+2); ctx.lineTo(cx,cy); ctx.lineTo(sx+size-2,sy+size-2);
-        ctx.moveTo(sx+size-2,sy+2); ctx.lineTo(cx,cy); ctx.lineTo(sx+2,sy+size-2);
-        ctx.stroke();
-      }
-    }
-  }
-}
-
-function render(){
-  const W=VIEW_W(), H=VIEW_H();
-  renderWorld();
-  drawReflections();
-  drawPlayer();
-  drawParticles();
-
-  // rebuild dynamic light list
-  GAME.lights.length=0;
-  // entrance torch
-  const {entX,entY}=GAME.entrance;
-  if(getTile(entX,entY-1)===T.TORCH) addLight({x:(entX+0.5)*TILE,y:(entY+0.2)*TILE,r:TILE*9,color:[255,170,80],intensity:0.55+0.06*Math.sin(GAME.time*7)});
-  // placed torches (scan near view)
-  for(let ty=Math.max(0,Math.floor(GAME.cam.y/TILE)-1); ty<=Math.min(WORLD_H-1,Math.ceil((GAME.cam.y+H/SCALE)/TILE)+1); ty++){
-    for(let tx=Math.max(0,Math.floor(GAME.cam.x/TILE)-1); tx<=Math.min(WORLD_W-1,Math.ceil((GAME.cam.x+W/SCALE)/TILE)+1); tx++){
-      if(getTile(tx,ty)===T.TORCH){
-        addLight({x:(tx+0.5)*TILE,y:(ty+0.4)*TILE,r:TILE*7,color:[255,150,60],intensity:0.5+0.08*Math.sin(GAME.time*8 + tx*3.1 + ty*2.3)});
-      }
-    }
-  }
-  // player lantern
-  const p=GAME.player;
-  if(p.lantern) addLight({x:p.x+p.w/2,y:p.y+p.h/2,r:TILE*6,color:[180,210,255],intensity:0.5});
-  // always a small personal light so you're never fully blind
-  addLight({x:p.x+p.w/2,y:p.y+p.h/2,r:TILE*3.2,color:[150,170,200],intensity:0.32});
-
-  renderLighting();
-
-  drawMineIndicator();
-
-  drawFloats();
-
-  // shop proximity hint
-  const nearShop = Math.abs(p.x - (GAME.entrance.entX*TILE)) < TILE*4 && Math.abs(p.y - (GAME.entrance.entY*TILE)) < TILE*3;
-  if(nearShop && !GAME.shopOpen) drawCenterHint('SHOP nearby — press SHOP');
-}
-
-function drawCenterHint(text){
-  const W=VIEW_W();
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.font=`${10}px 'Press Start 2P', monospace`;
-  ctx.textAlign='center';
-  const w=ctx.measureText(text).width+24;
-  ctx.fillRect(W/2-w/2, VIEW_H()-120, w, 24);
-  ctx.fillStyle='#f5c542';
-  ctx.fillText(text, W/2, VIEW_H()-104);
-  ctx.textAlign='left';
-}
-
-/* ---------- Audio (procedural SFX) ---------- */
-let audioCtx=null;
-function ensureAudio(){
-  if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
-  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
-}
-function sfx(type){
-  if(!audioCtx) return;
-  const now=audioCtx.currentTime;
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.connect(g); g.connect(audioCtx.destination);
-  const cfg={
-    mine:{f:120,t:'square',d:0.12,v:0.18},
-    torch:{f:420,t:'sine',d:0.18,v:0.12},
-    coin:{f:880,t:'triangle',d:0.16,v:0.14},
-    no:{f:90,t:'sawtooth',d:0.2,v:0.12},
-  }[type]||{f:300,t:'sine',d:0.1,v:0.1};
-  o.type=cfg.t; o.frequency.value=cfg.f;
-  g.gain.setValueAtTime(cfg.v, now);
-  g.gain.exponentialRampToValueAtTime(0.001, now+cfg.d);
-  o.start(now); o.stop(now+cfg.d);
-  if(type==='coin'){ o.frequency.setValueAtTime(880,now); o.frequency.setValueAtTime(1320,now+0.06); }
-}
-
-/* ---------- HUD ---------- */
-const el=id=>document.getElementById(id);
-function updateHUD(){
-  el('goldDisp').textContent = GAME.player.gold;
-  el('pickDisp').textContent = PICK_NAMES[GAME.player.pick];
-  el('torchDisp').textContent = GAME.player.torches;
-  el('depthDisp').textContent = Math.floor(GAME.player.y/TILE) + 'm';
-  // disable buy buttons based on gold / owned
-  document.querySelectorAll('#shop [data-buy]').forEach(b=>{
-    const key=b.dataset.buy; const def=SHOP[key];
-    let owned=false;
-    if(def.pick!==undefined && GAME.player.pick>=def.pick) owned=true;
-    if(def.lantern && GAME.player.lantern) owned=true;
-    if(def.boots && GAME.player.boots) owned=true;
-    b.disabled = owned || GAME.player.gold<def.cost;
-    b.textContent = owned ? 'OWNED' : def.cost+'g';
-  });
-}
-let toastTimer=null;
-function toast(msg){
-  const t=el('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'), 2200);
-}
-
-/* ---------- Input ---------- */
-GAME.input = {stickX:0,stickY:0,mineHeld:false};
-
-// virtual stick
-const stickEl=el('stick'), knobEl=el('knob');
-let stickId=null, stickCx=0, stickCy=0;
-function stickStart(e){
-  ensureAudio();
-  e.preventDefault();
-  const t=e.changedTouches[0];
-  stickId=t.identifier;
-  const r=stickEl.getBoundingClientRect();
-  stickCx=r.left+r.width/2; stickCy=r.top+r.height/2;
-  stickMove(t);
-}
-function stickMove(t){
-  let dx=t.clientX-stickCx, dy=t.clientY-stickCy;
-  const max=44, d=Math.hypot(dx,dy);
-  if(d>max){ dx=dx/d*max; dy=dy/d*max; }
-  knobEl.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-  GAME.input.stickX=dx/max; GAME.input.stickY=dy/max;
-}
-function stickEnd(e){
-  e.preventDefault();
-  for(const t of e.changedTouches){
-    if(t.identifier===stickId){
-      stickId=null; GAME.input.stickX=0; GAME.input.stickY=0;
-      knobEl.style.transform='translate(-50%,-50%)';
-    }
-  }
-}
-stickEl.addEventListener('touchstart', stickStart, {passive:false});
-stickEl.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches) if(t.identifier===stickId) stickMove(t); }, {passive:false});
-stickEl.addEventListener('touchend', stickEnd);
-stickEl.addEventListener('touchcancel', stickEnd);
-
-// action buttons
-function bindHold(id, onDown, onUp){
-  const b=el(id);
-  const down=e=>{e.preventDefault(); ensureAudio(); onDown&&onDown(); b.classList.add('active');};
-  const up=e=>{e.preventDefault(); onUp&&onUp(); b.classList.remove('active');};
-  b.addEventListener('touchstart', down, {passive:false});
-  b.addEventListener('touchend', up);
-  b.addEventListener('touchcancel', up);
-  b.addEventListener('mousedown', down);
-  b.addEventListener('mouseup', up);
-  b.addEventListener('mouseleave', up);
-}
-bindHold('mineBtn', ()=>GAME.input.mineHeld=true, ()=>GAME.input.mineHeld=false);
-el('torchBtn').addEventListener('click', ()=>{ensureAudio(); placeTorch();});
-el('shopBtn').addEventListener('click', ()=>{ensureAudio(); toggleShop(!GAME.shopOpen);});
-el('closeShop').addEventListener('click', ()=>toggleShop(false));
-el('sellBtn').addEventListener('click', ()=>{ensureAudio(); sellAll();});
-el('shop').addEventListener('click', e=>{
-  const b=e.target.closest('[data-buy]'); if(!b) return;
-  buyItem(b.dataset.buy);
-});
-function toggleShop(open){
-  GAME.shopOpen=open;
-  el('shop').classList.toggle('open', open);
-  el('shopBtn').textContent = open?'CLOSE':'SHOP';
-  if(open) updateHUD();
-}
-
-// keyboard (desktop testing)
-const keys={};
-window.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()]=true;
-  if(e.key===' ') { e.preventDefault(); GAME.input.mineHeld=true; }
-  if(e.key.toLowerCase()==='e') placeTorch();
-  if(e.key.toLowerCase()==='q') toggleShop(!GAME.shopOpen);
-});
-window.addEventListener('keyup', e=>{
-  keys[e.key.toLowerCase()]=false;
-  if(e.key===' ') GAME.input.mineHeld=false;
-});
-function readKeys(){
-  if(stickId!==null) return;
-  let x=0,y=0;
-  if(keys['arrowleft']||keys['a']) x-=1;
-  if(keys['arrowright']||keys['d']) x+=1;
-  if(keys['arrowup']||keys['w']) y-=1;
-  if(keys['arrowdown']||keys['s']) y+=1;
-  const l=Math.hypot(x,y)||1;
-  GAME.input.stickX=x/l; GAME.input.stickY=y/l;
-}
-
-/* ---------- Game loop ---------- */
-let lastT=0;
-function loop(t){
-  const dt=Math.min((t-lastT)/1000, 0.05) || 0;
-  lastT=t;
-  GAME.time+=dt;
-  GAME._frame=(GAME._frame||0)+1;
-  if(GAME.state==='play'){
-    readKeys();
-    updatePlayer(dt);
-    tickMining(dt);
-    updateParticles(dt);
-    updateFloats(dt);
-    updateHUD();
-  }
-  render();
-  requestAnimationFrame(loop);
-}
-
-/* ---------- Init ---------- */
-function startGame(){
-  ensureAudio();
-  const ent = generateWorld();
-  GAME.entrance = {entX:ent.entX, entY:ent.entY};
-  GAME.player.x = ent.entX*TILE;
-  GAME.player.y = (ent.entY-2)*TILE;
-  GAME.state='play';
-  el('title').style.display='none';
-  el('hud').style.display='block';
-  updateHUD();
-  toast('Mine the cave. Sell ore at the shop. Go deep.');
-}
-el('playBtn').addEventListener('click', ()=>{ startGame(); });
-
-// boot: load textures (fallbacks used if missing), then start loop
-initTextures().then(()=>{
-  // pre-cache fallback tiles
-  for(const k of [T.DIRT,T.STONE,T.COPPER,T.IRON,T.GOLD,T.GEM,T.BEDROCK,T.WOOD,T.GRASS]) getTileSprite(k);
-  requestAnimationFrame(loop);
-});
-
-// allow tap on title to also start
-document.getElementById('title').addEventListener('click', e=>{
-  if(e.target.id==='title' || e.target.id==='playBtn') startGame();
-});
-  </script>
-  <script data-pplx-inline-edit>
-    (function () {
-  if (window === window.top) return;
-
-  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
-  const MAX_FONT_BYTES = 500 * 1024;
-  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
-  let scrollForwarding = false;
-  let scrollRaf = 0;
-  let trustedTopOrigin = null;
-
-  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
-  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
-  // across multiple labels.
-  function matchesAllowedOrigin(origin) {
-    if (!origin) return false;
-    for (const entry of allowedParentOrigins) {
-      if (!entry.includes("*")) {
-        if (entry === origin) return true;
-        continue;
-      }
-      const pattern = new RegExp(
-        "^" +
-          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
-          "$",
-      );
-      if (pattern.test(origin)) return true;
-    }
-    return false;
-  }
-
-  // Trust decision: when the sender is same-origin-visible (event.origin is a
-  // real origin like https://www.perplexity.ai) we trust event.origin directly.
-  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
-  // broker's stamped `parentOrigin` to identify the top window. The fallback
-  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
-  // on the response path (see postToTrustedTop) to ensure replies can't be
-  // delivered to anyone but the actual top window of that claimed origin.
-  function getTrustedParentOrigin(event) {
-    const forwardedParentOrigin =
-      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
-    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
-    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
-  }
-
-  // All responses go to window.top with targetOrigin = the allowlisted origin.
-  // An attacker that iframes us inside their own null-origin broker can claim
-  // any parentOrigin they like, but the browser will drop the reply whenever
-  // the real top's origin doesn't match — so the screenshot never leaves.
-  function postToTrustedTop(message) {
-    if (!trustedTopOrigin) return;
-    try {
-      window.top.postMessage(message, trustedTopOrigin);
-    } catch (_error) {}
-  }
-
-  function inlineAll(original, clone) {
-    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
-
-    try {
-      const computedStyle = getComputedStyle(original);
-      // cssText on a computed style is the serialized declaration in modern
-      // Chromium/Safari — a single read beats enumerating ~400 longhand
-      // properties. Firefox returns "" here, so we fall back on empty.
-      const serialized = computedStyle.cssText;
-      if (serialized) {
-        clone.style.cssText = serialized;
-      } else {
-        const parts = new Array(computedStyle.length);
-        for (let index = 0; index < computedStyle.length; index += 1) {
-          const property = computedStyle[index];
-          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+    <script>
+        // Global state
+        const availableModels = [
+            { apiName: 'claude-sonnet-4', displayName: 'Claude Sonnet 4', shortName: 'Sonnet 4' },
+            { apiName: 'claude-opus-4', displayName: 'Claude Opus 4', shortName: 'Opus 4' },
+            { apiName: 'claude-3-7-sonnet', displayName: 'Claude 3.7 Sonnet', shortName: 'Sonnet 3.7' }
+        ];
+        let currentModel = availableModels[0].apiName;
+        let chatHistory = [];
+        let isStreaming = false;
+        let recentConversations = [];
+        let currentConversationId = null;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing Claude interface...');
+            initializeInterface();
+            updateModelDisplay();
+            updateProtocolNotice();
+        });
+
+        function updateProtocolNotice() {
+            const protocolNotice = document.getElementById('protocolNotice');
+            if (protocolNotice) {
+                if (window.location.protocol === 'file:') {
+                    protocolNotice.innerHTML = '✅ <strong>File mode:</strong> Authentication should work perfectly here!';
+                    protocolNotice.style.color = '#22c55e';
+                } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    protocolNotice.innerHTML = '⚠️ <strong>Server mode:</strong> If auth fails, browser profile issues are likely. See guide below.';
+                    protocolNotice.style.color = '#f59e0b';
+                } else {
+                    protocolNotice.innerHTML = '🌐 <strong>Web mode:</strong> Make sure popups are allowed for this domain.';
+                    protocolNotice.style.color = '#3b82f6';
+                }
+            }
         }
-        clone.style.cssText = parts.join("");
-      }
-    } catch (_error) {}
 
-    const originalChildren = original.children;
-    const clonedChildren = clone.children;
-    for (
-      let index = 0;
-      index < originalChildren.length && index < clonedChildren.length;
-      index += 1
-    ) {
-      inlineAll(originalChildren[index], clonedChildren[index]);
-    }
-  }
+        async function handleManualAuth() {
+            const authButton = document.getElementById('authButton');
+            
+            try {
+                if (authButton) {
+                    authButton.textContent = '🔄 Authenticating...';
+                    authButton.disabled = true;
+                }
+                
+                console.log('🔐 Manually triggering Puter authentication...');
+                
+                // Trigger authentication with a simple test call
+                const authResponse = await puter.ai.chat("test", {model: 'claude-sonnet-4'});
+                
+                console.log('✅ Raw auth response:', authResponse);
 
-  function extractFontUrl(srcValue) {
-    const matches = [
-      ...srcValue.matchAll(
-        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
-      ),
-    ];
-    if (matches.length === 0) return null;
-    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
-    if (woff2) return woff2[1];
-    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
-    if (woff) return woff[1];
-    return matches[0][1];
-  }
+                // Check for a successful response structure
+                if (authResponse && (authResponse.message?.content || authResponse.success !== false)) {
+                     console.log('✅ Authentication successful!');
+                    if (authButton) {
+                        authButton.textContent = '✅ Authenticated';
+                        authButton.style.backgroundColor = '#22c55e';
+                        setTimeout(() => {
+                           const authBox = authButton.closest('div[style*="max-width: 600px"]');
+                           if(authBox) authBox.style.display = 'none';
+                        }, 2000);
+                    }
+                } else {
+                    throw new Error('Authentication response indicates failure.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Manual authentication failed:', error);
+                
+                if (authButton) {
+                    authButton.textContent = '❌ Auth Failed - Try Guide';
+                    authButton.disabled = false;
+                    authButton.style.backgroundColor = '#dc2626';
+                }
+                
+                // --- ENHANCED ERROR MESSAGE ---
+                const troubleshootGuide = `
+⚠️ AUTHENTICATION FAILED!
 
-  // Cache resolved font URL -> data URI across captures. Fonts on a page
-  // essentially never change, and a batch run emits multiple captures back to
-  // back — without this we'd refetch + re-base64 every time.
-  const fontDataUriCache = new Map();
-  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+This usually happens because of your browser profile settings (extensions, cache, etc.), NOT a bug in the code.
 
-  async function fetchAsDataUri(url) {
-    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
-    let dataUri = null;
-    try {
-      const response = await fetch(url, { mode: "cors", credentials: "omit" });
-      if (response.ok) {
-        const blob = await response.blob();
-        if (blob.size <= MAX_FONT_BYTES) {
-          dataUri = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () =>
-              resolve(typeof reader.result === "string" ? reader.result : null);
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(blob);
-          });
+As you noticed, it works in a new Guest or Incognito profile. Here is how to fix it in your MAIN profile:
+
+--- TROUBLESHOOTING GUIDE ---
+
+✅ QUICKEST FIX (TRY FIRST):
+1.  🥷 Use Incognito/Private Mode:
+    • Press Ctrl+Shift+N (Chrome/Edge) or Ctrl+Shift+P (Firefox).
+    • Open this HTML file there. This is the fastest workaround.
+
+🔧 TO FIX YOUR MAIN PROFILE (TRY IN ORDER):
+2.  🔌 Disable Extensions:
+    • Go to your browser's extensions page (e.g., chrome://extensions).
+    • TEMPORARILY disable ALL extensions, especially ad-blockers (uBlock, AdBlock) and privacy blockers.
+    • Refresh this page and try authenticating again.
+
+3.  🧹 Clear Site Data for Puter:
+    • Go to puter.com, click the 🔒 icon in the address bar -> Site Settings/Cookies and site data -> Delete data.
+    • Refresh this page and try again.
+
+4.  🍪 Allow Third-Party Cookies:
+    • Go to your browser's cookie settings (e.g., chrome://settings/cookies).
+    • Ensure "Block third-party cookies" is NOT enabled, or add "[*.]puter.com" to the allowed list.
+
+If you are running this from a local server (like localhost), the issue is almost certainly extensions or cookie settings.
+`;
+                alert(troubleshootGuide);
+            }
         }
-      }
-    } catch (_error) {
-      dataUri = null;
-    }
-    fontDataUriCache.set(url, dataUri);
-    return dataUri;
-  }
 
-  function collectFontFaceRuleTexts() {
-    const rules = [];
-    for (const sheet of document.styleSheets) {
-      let cssRules;
-      try {
-        cssRules = sheet.cssRules;
-      } catch (_error) {
-        continue;
-      }
-      if (!cssRules) continue;
-      for (const rule of cssRules) {
-        const cssText = rule.cssText || "";
-        if (cssText.startsWith("@font-face")) rules.push(cssText);
-      }
-    }
-    return rules;
-  }
+        function initializeInterface() {
+            const welcomeInput = document.getElementById('welcomeInput');
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+            const newChatBtn = document.getElementById('newChatBtn');
+            const actionBtns = document.querySelectorAll('.action-btn');
+            const modelSelectors = document.querySelectorAll('#modelSelector, #chatModelSelector');
+            const authButton = document.getElementById('authButton');
 
-  async function buildInlinedFontCss() {
-    const ruleTexts = collectFontFaceRuleTexts();
-    if (ruleTexts.length === 0) return null;
+            if (authButton) authButton.addEventListener('click', handleManualAuth);
 
-    const resolved = ruleTexts.map((cssText) => {
-      if (!SRC_DECLARATION_RE.test(cssText)) return null;
-      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
-      if (!srcMatch) return null;
-      const url = extractFontUrl(srcMatch[1]);
-      if (!url) return null;
-      try {
-        return { cssText, url: new URL(url, document.baseURI).href };
-      } catch (_error) {
-        return null;
-      }
-    });
+            [welcomeInput, chatInput].forEach(textarea => {
+                if (textarea) {
+                    textarea.addEventListener('input', () => autoResize(textarea));
+                    textarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (textarea === welcomeInput) handleWelcomeMessage();
+                            else handleChatMessage();
+                        }
+                    });
+                }
+            });
 
-    const dataUris = await Promise.all(
-      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
-    );
+            if (sendBtn) sendBtn.addEventListener('click', handleWelcomeMessage);
+            if (chatSendBtn) chatSendBtn.addEventListener('click', handleChatMessage);
+            if (newChatBtn) newChatBtn.addEventListener('click', startNewChat);
 
-    const inlined = [];
-    let totalBytes = 0;
-    for (let index = 0; index < resolved.length; index += 1) {
-      const entry = resolved[index];
-      const dataUri = dataUris[index];
-      if (!entry || !dataUri) continue;
-      const approxBytes = dataUri.length * 0.75;
-      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
-      totalBytes += approxBytes;
-      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
-    }
-    return inlined.length > 0 ? inlined.join("\n") : null;
-  }
+            actionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const prompt = this.getAttribute('data-prompt');
+                    if (prompt && welcomeInput) {
+                        welcomeInput.value = prompt;
+                        welcomeInput.focus();
+                        autoResize(welcomeInput);
+                    }
+                });
+            });
 
-  function stripExternal(clone) {
-    const images = clone.querySelectorAll("img");
-    for (let index = 0; index < images.length; index += 1) {
-      const src = images[index].getAttribute("src");
-      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
-    }
+            modelSelectors.forEach(selector => {
+                if (selector) selector.addEventListener('click', toggleModel);
+            });
 
-    const elements = clone.querySelectorAll("*");
-    for (let index = 0; index < elements.length; index += 1) {
-      const style = elements[index].style.cssText;
-      if (style && style.includes("url(")) {
-        elements[index].style.cssText = style.replace(
-          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
-          "none",
-        );
-      }
-    }
-  }
+            if (welcomeInput) welcomeInput.focus();
+            console.log('✅ Interface initialized');
+        }
 
-  function emitScroll() {
-    scrollRaf = 0;
-    if (!scrollForwarding) return;
-    postToTrustedTop({
-      type: "INLINE_EDIT_SCROLL",
-      scrollX: window.scrollX,
-      scrollY: window.scrollY,
-    });
-  }
+        function updateModelDisplay() {
+            const model = availableModels.find(m => m.apiName === currentModel);
+            if (!model) {
+                console.error("Model not found in available models:", currentModel);
+                return;
+            }
+            document.getElementById('currentModel').textContent = model.displayName;
+            document.getElementById('chatCurrentModel').textContent = model.shortName;
+        }
 
-  window.addEventListener(
-    "scroll",
-    function () {
-      if (!scrollForwarding || scrollRaf) return;
-      scrollRaf = requestAnimationFrame(emitScroll);
-    },
-    { passive: true, capture: true },
-  );
+        function toggleModel() {
+            const currentIndex = availableModels.findIndex(m => m.apiName === currentModel);
+            const nextIndex = (currentIndex + 1) % availableModels.length;
+            currentModel = availableModels[nextIndex].apiName;
+            updateModelDisplay();
+            console.log('🔄 Model switched to:', availableModels[nextIndex].displayName);
+        }
 
-  async function handleCaptureRequest(event) {
-    const requestId = event.data.requestId;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+        async function handleWelcomeMessage() {
+            const welcomeInput = document.getElementById('welcomeInput');
+            const message = welcomeInput.value.trim();
+            if (!message || isStreaming) return;
+            console.log('📤 Sending welcome message:', message);
+            createNewConversation(message);
+            switchToChatView();
+            await sendMessage(message);
+        }
 
-    function postResult(dataUrl) {
-      postToTrustedTop({
-        type: "INLINE_EDIT_SCREENSHOT_RESULT",
-        requestId,
-        dataUrl,
-        scrollX,
-        scrollY,
-      });
-    }
+        async function handleChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            if (!message || isStreaming) return;
+            console.log('📤 Sending chat message:', message);
+            chatInput.value = '';
+            autoResize(chatInput);
+            await sendMessage(message);
+        }
 
-    try {
-      // Wait for any pending web fonts to resolve so both inline metrics and
-      // the @font-face inlining below see the same loaded faces.
-      if (document.fonts && document.fonts.ready) {
-        try {
-          await document.fonts.ready;
-        } catch (_error) {}
-      }
+        function createNewConversation(firstMessage) {
+            currentConversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const title = firstMessage.length > 50 ? firstMessage.substring(0, 50) + '...' : firstMessage;
+            const conversation = {
+                id: currentConversationId,
+                title: title,
+                messages: [],
+                timestamp: new Date(),
+                model: currentModel
+            };
+            recentConversations.unshift(conversation);
+            if (recentConversations.length > 10) {
+                recentConversations = recentConversations.slice(0, 10);
+            }
+            updateRecentItems();
+            console.log('📝 Created new conversation:', title);
+        }
 
-      const clone = document.documentElement.cloneNode(true);
-      inlineAll(document.documentElement, clone);
+        function updateRecentItems() {
+            const recentItemsContainer = document.getElementById('recentItems');
+            recentItemsContainer.innerHTML = '';
+            if (recentConversations.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'empty-state';
+                emptyDiv.innerHTML = '<span style="color: #666; font-size: 13px; font-style: italic;">No recent conversations</span>';
+                recentItemsContainer.appendChild(emptyDiv);
+            } else {
+                recentConversations.forEach(conversation => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'recent-item';
+                    itemDiv.textContent = conversation.title;
+                    itemDiv.addEventListener('click', () => loadConversation(conversation.id));
+                    recentItemsContainer.appendChild(itemDiv);
+                });
+            }
+        }
 
-      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
-      for (let index = 0; index < removedNodes.length; index += 1) {
-        removedNodes[index].remove();
-      }
+        function loadConversation(conversationId) {
+            const conversation = recentConversations.find(conv => conv.id === conversationId);
+            if (!conversation) return;
+            currentConversationId = conversationId;
+            chatHistory = [...conversation.messages];
+            currentModel = conversation.model;
+            updateModelDisplay();
+            switchToChatView();
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            conversation.messages.forEach(msg => {
+                addMessage(msg.content, msg.role);
+            });
+            document.getElementById('chatInput').focus();
+            console.log('📂 Loaded conversation:', conversation.title);
+        }
 
-      stripExternal(clone);
+        function switchToChatView() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('chatContainer').classList.add('active');
+            console.log('🔄 Switched to chat view');
+        }
 
-      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
-      // can resolve them — external font URLs aren't fetched during
-      // foreignObject rendering, which would otherwise force a fallback face
-      // and change text metrics.
-      const inlinedFontCss = await buildInlinedFontCss();
-      if (inlinedFontCss) {
-        const styleEl = document.createElement("style");
-        styleEl.textContent = inlinedFontCss;
-        const head = clone.querySelector("head");
-        if (head) head.appendChild(styleEl);
-        else clone.insertBefore(styleEl, clone.firstChild);
-      }
+        function startNewChat() {
+            chatHistory = [];
+            currentConversationId = null;
+            
+            // --- BUG FIX: Reset model to default on new chat ---
+            currentModel = availableModels[0].apiName;
+            updateModelDisplay();
+            
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const chatContainer = document.getElementById('chatContainer');
+            const chatMessages = document.getElementById('chatMessages');
+            const welcomeInput = document.getElementById('welcomeInput');
+            
+            if (welcomeScreen) welcomeScreen.style.display = 'flex';
+            if (chatContainer) chatContainer.classList.remove('active');
+            if (chatMessages) chatMessages.innerHTML = '';
+            if (welcomeInput) {
+                welcomeInput.value = '';
+                autoResize(welcomeInput);
+                welcomeInput.focus();
+            }
+            autoResize(document.getElementById('chatInput'));
+            
+            console.log('🆕 Started new chat, model reset to default.');
+        }
 
-      const html = new XMLSerializer().serializeToString(clone);
-      const svg =
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
-        '<foreignObject width="100%" height="100%">' +
-        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
-        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
-        html +
-        "</div></div></foreignObject></svg>";
-      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-      const image = new Image();
-      image.onload = function () {
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext("2d").drawImage(image, 0, 0);
-        postResult(canvas.toDataURL("image/png"));
-      };
-      image.onerror = function () {
-        postResult(null);
-      };
-      image.src = svgUrl;
-    } catch (_error) {
-      postResult(null);
-    }
-  }
+        async function sendMessage(message) {
+            if (isStreaming) return;
+            
+            console.log('🚀 Starting to send message...');
+            addMessage(message, 'user');
+            showTypingIndicator();
+            setInputState(false);
 
-  window.addEventListener("message", function (event) {
-    if (!event.data) return;
-    // Only accept messages from the direct parent frame. Blocks sibling /
-    // unrelated-window postMessage senders that could otherwise reach us.
-    if (event.source !== window.parent) return;
+            chatHistory.push({ role: 'user', content: message });
+            
+            try {
+                isStreaming = true;
+                if (typeof puter === 'undefined') { throw new Error('Puter.js is not available.'); }
+                console.log('📡 Calling Puter AI with model:', currentModel, 'and full history.');
+                
+                const response = await puter.ai.chat(chatHistory, {
+                    model: currentModel,
+                    stream: true
+                });
 
-    const trustedParentOrigin = getTrustedParentOrigin(event);
-    if (!trustedParentOrigin) return;
-    trustedTopOrigin = trustedParentOrigin;
+                if (response && response.success === false) {
+                    throw new Error('Authentication required. Please click the authenticate button and allow the popup.');
+                }
+                
+                const { messageContent } = addMessage('', 'assistant');
+                hideTypingIndicator();
+                let fullResponse = '';
+                
+                for await (const part of response) {
+                    if (part?.text) {
+                        fullResponse += part.text;
+                        renderFormattedMessage(fullResponse, messageContent);
+                        scrollToBottom();
+                    }
+                }
+                
+                console.log('✅ Streaming complete.');
+                renderFormattedMessage(fullResponse, messageContent); 
+                
+                chatHistory.push({ role: 'assistant', content: fullResponse });
+                updateCurrentConversation();
+                
+            } catch (error) {
+                console.error('❌ Error in sendMessage:', error);
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error: ' + (error.message || 'Unknown error.'), 'assistant', true);
+                
+                // FIX: The API call failed, so the optimistic user message added to the history
+                // resulted in an invalid state. Remove it to allow the user to try again.
+                if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+                    chatHistory.pop();
+                }
 
-    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
-      scrollForwarding = true;
-      emitScroll();
-      return;
-    }
+            } finally {
+                isStreaming = false;
+                setInputState(true);
+                document.getElementById('chatInput')?.focus();
+            }
+        }
 
-    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
-      scrollForwarding = false;
-      if (scrollRaf) cancelAnimationFrame(scrollRaf);
-      scrollRaf = 0;
-      return;
-    }
+        function updateCurrentConversation() {
+            if (!currentConversationId) return;
+            const conversation = recentConversations.find(conv => conv.id === currentConversationId);
+            if (conversation) {
+                conversation.messages = [...chatHistory];
+                conversation.timestamp = new Date();
+                const index = recentConversations.indexOf(conversation);
+                if (index > 0) {
+                    recentConversations.splice(index, 1);
+                    recentConversations.unshift(conversation);
+                    updateRecentItems();
+                }
+            }
+        }
 
-    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+        function addMessage(content, role, isError = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.setAttribute('data-message-id', messageId);
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = role === 'user' ? 'H' : `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            if (role === 'assistant') renderFormattedMessage(content, messageContent);
+            else messageContent.textContent = content;
+            
+            if (isError) messageContent.style.color = '#ff6b6b';
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            
+            scrollToBottom();
+            return { messageId, messageContent };
+        }
+        
+        function renderFormattedMessage(content, container) {
+            container.innerHTML = ''; // Clear previous content
+            const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+            let lastIndex = 0;
+            let match;
 
-    handleCaptureRequest(event);
-  });
-})();
+            while ((match = codeBlockRegex.exec(content)) !== null) {
+                if (match.index > lastIndex) {
+                    const textPart = document.createElement('div');
+                    textPart.className = 'message-text-part';
+                    textPart.textContent = content.substring(lastIndex, match.index);
+                    container.appendChild(textPart);
+                }
 
+                const [fullMatch, language, code] = match;
+                container.appendChild(createArtifactCanvas(code.trim(), language || 'text'));
+                lastIndex = match.index + fullMatch.length;
+            }
 
-  </script>
+            if (lastIndex < content.length) {
+                 const textPart = document.createElement('div');
+                textPart.className = 'message-text-part';
+                textPart.textContent = content.substring(lastIndex);
+                container.appendChild(textPart);
+            }
+            
+            if (container.children.length === 0 && content) {
+                 const textPart = document.createElement('div');
+                textPart.className = 'message-text-part';
+                textPart.textContent = content;
+                container.appendChild(textPart);
+            }
+        }
+
+        function createArtifactCanvas(code, language) {
+            const canvas = document.createElement('div');
+            canvas.className = 'artifact-canvas';
+
+            const header = document.createElement('div');
+            header.className = 'artifact-header';
+            
+            const title = document.createElement('div');
+            title.className = 'artifact-title';
+            title.textContent = language ? `${language} code` : 'Code Artifact';
+            
+            const actions = document.createElement('div');
+            actions.className = 'artifact-actions';
+
+            if (language.toLowerCase() === 'html') {
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'artifact-btn view-btn';
+                viewBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> View`;
+                viewBtn.onclick = () => {
+                    const blob = new Blob([code], { type: 'text/html' });
+                    window.open(URL.createObjectURL(blob), '_blank');
+                };
+                actions.appendChild(viewBtn);
+            }
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'artifact-btn';
+            const copyIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy`;
+            copyBtn.innerHTML = copyIcon;
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(code).then(() => {
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => { copyBtn.innerHTML = copyIcon; }, 2000);
+                });
+            };
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'artifact-btn';
+            downloadBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Download`;
+            downloadBtn.onclick = () => {
+                const extensionMap = { javascript: 'js', python: 'py', html: 'html', css: 'css', json: 'json', java: 'java', csharp: 'cs', cpp: 'cpp', ruby: 'rb', go: 'go', rust: 'rs', shell: 'sh', bash: 'sh' };
+                const extension = extensionMap[language.toLowerCase()] || 'txt';
+                const filename = `claude-code.${extension}`;
+                const blob = new Blob([code], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                a.remove();
+            };
+
+            actions.appendChild(copyBtn);
+            actions.appendChild(downloadBtn);
+            header.appendChild(title);
+            header.appendChild(actions);
+
+            const codeArea = document.createElement('div');
+            codeArea.className = 'artifact-code';
+            const pre = document.createElement('pre');
+            const codeEl = document.createElement('code');
+            codeEl.textContent = code;
+            pre.appendChild(codeEl);
+            codeArea.appendChild(pre);
+
+            canvas.appendChild(header);
+            canvas.appendChild(codeArea);
+
+            return canvas;
+        }
+
+        function showTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.style.display = 'flex';
+                scrollToBottom();
+            }
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function setInputState(enabled) {
+            const inputs = [
+                document.getElementById('welcomeInput'),
+                document.getElementById('chatInput'),
+                document.getElementById('sendBtn'),
+                document.getElementById('chatSendBtn')
+            ];
+            inputs.forEach(input => {
+                if (input) {
+                    input.disabled = !enabled;
+                    input.style.opacity = enabled ? '1' : '0.6';
+                }
+            });
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                requestAnimationFrame(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
+            }
+        }
+
+        function autoResize(textarea) {
+            if (!textarea) return;
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+        }
+    </script>
 </body>
-
 </html>
