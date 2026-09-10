@@ -1,1334 +1,1227 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Interface - Fully Functional</title>
-    <script src="https://js.puter.com/v2/"></script>
-    <script src="https://js.puter.com/v2/"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background-color: #1a1a1a;
-            color: #e5e5e5;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background-color: #262626;
-            border-right: 1px solid #404040;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid #404040;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 16px;
-        }
-
-        .back-arrow {
-            width: 20px;
-            height: 20px;
-            opacity: 0.7;
-        }
-
-        .new-chat-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: none;
-            border: none;
-            color: #ff6b35;
-            font-size: 14px;
-            padding: 8px 0;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .new-chat-btn:hover {
-            opacity: 0.8;
-        }
-
-        .plus-icon {
-            width: 16px;
-            height: 16px;
-            background-color: #ff6b35;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: white;
-        }
-
-        .sidebar-nav {
-            padding: 16px;
-            border-bottom: 1px solid #404040;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 0;
-            color: #b3b3b3;
-            font-size: 14px;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .nav-item:hover {
-            color: #fff;
-        }
-
-        .nav-icon {
-            width: 16px;
-            height: 16px;
-            opacity: 0.7;
-        }
-
-        .sidebar-content {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-        }
-
-        .section-title {
-            font-size: 12px;
-            color: #808080;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .recent-items {
-            min-height: 20px;
-        }
-
-        .recent-item {
-            padding: 8px 0;
-            color: #b3b3b3;
-            font-size: 13px;
-            cursor: pointer;
-            transition: color 0.2s;
-            line-height: 1.4;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .recent-item:hover {
-            color: #fff;
-        }
-
-        .empty-state {
-            padding: 8px 0;
-            text-align: center;
-        }
-
-        .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid #404040;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .user-avatar {
-            width: 24px;
-            height: 24px;
-            background-color: #ff6b35;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: white;
-        }
-
-        .user-details {
-            flex: 1;
-        }
-
-        .user-name {
-            font-size: 14px;
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .user-plan {
-            font-size: 12px;
-            color: #808080;
-        }
-
-        .chevron-down {
-            width: 16px;
-            height: 16px;
-            opacity: 0.5;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #1a1a1a;
-        }
-
-        .content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            position: relative;
-        }
-
-        .welcome-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            padding: 40px;
-        }
-
-        .chat-container {
-            display: none;
-            flex-direction: column;
-            height: 100vh;
-            max-height: 100vh;
-            overflow: hidden;
-        }
-
-        .chat-container.active {
-            display: flex;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 20px;
-            margin-bottom: 20px;
-            height: calc(100vh - 200px);
-            min-height: 0;
-            scrollbar-width: thin;
-            scrollbar-color: #404040 #262626;
-            scroll-behavior: smooth;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: #262626;
-            border-radius: 4px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #404040;
-            border-radius: 4px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        .message {
-            margin-bottom: 24px;
-            display: flex;
-            gap: 12px;
-        }
-
-        .message.user {
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .message.user .message-avatar {
-            background-color: #ff6b35;
-            color: white;
-        }
-
-        .message.assistant .message-avatar {
-            background-color: #4a90e2;
-            color: white;
-        }
-
-        .message-content {
-            max-width: 70%;
-            background-color: #262626;
-            border-radius: 12px;
-            padding: 16px;
-            color: #e5e5e5;
-            line-height: 1.5;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: pre-wrap;
-        }
-        .message.assistant .message-content {
-            padding: 0; /* Remove padding for container of artifacts */
-        }
-        .message-text-part {
-            padding: 16px;
-            white-space: pre-wrap;
-        }
-
-        .message.user .message-content {
-            background-color: #ff6b35;
-            color: white;
-            padding: 16px; /* Restore padding for user messages */
-        }
-
-        .typing-indicator {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            color: #808080;
-            font-style: italic;
-            padding: 16px;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background-color: #808080;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes typing {
-            0%, 80%, 100% {
-                transform: scale(1);
-                opacity: 0.5;
-            }
-            40% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-
-        .greeting {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-            font-size: 32px;
-            font-weight: 400;
-            color: #fff;
-        }
-
-        .sun-icon {
-            width: 32px;
-            height: 32px;
-            color: #ff6b35;
-        }
-
-        .search-container {
-            width: 100%;
-            max-width: 600px;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .chat-container .search-container {
-            position: sticky;
-            bottom: 0;
-            background-color: #1a1a1a;
-            padding: 20px 0;
-            margin: 0;
-            max-width: none;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 16px 120px 16px 16px;
-            background-color: #262626;
-            border: 1px solid #404040;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.2s;
-            resize: none;
-            min-height: 50px;
-            max-height: 150px;
-            font-family: inherit;
-        }
-
-        .search-input:focus {
-            border-color: #ff6b35;
-        }
-
-        .search-input::placeholder {
-            color: #808080;
-        }
-
-        .search-actions {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            gap: 4px;
-        }
-
-        .search-btn {
-            padding: 8px;
-            background: none;
-            border: none;
-            color: #808080;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-        }
-
-        .search-btn:hover {
-            background-color: #404040;
-        }
-
-        .send-btn {
-            padding: 8px;
-            background-color: #ff6b35;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .send-btn:hover {
-            background-color: #e55a2b;
-        }
-
-        .send-btn:disabled {
-            background-color: #404040;
-            cursor: not-allowed;
-        }
-
-        .model-selector {
-            align-self: flex-end;
-            margin-bottom: 20px;
-            margin-right: 60px;
-        }
-
-        .model-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: none;
-            border: none;
-            color: #b3b3b3;
-            font-size: 14px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-        }
-
-        .model-btn:hover {
-            background-color: #262626;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            background-color: #262626;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            color: #e5e5e5;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .action-btn:hover {
-            background-color: #333;
-            border-color: #555;
-            transform: translateY(-1px);
-        }
-
-        .action-icon {
-            width: 16px;
-            height: 16px;
-            opacity: 0.8;
-        }
-        
-        /* Artifact Canvas Styles */
-        .artifact-canvas {
-            background-color: #0d0d0d;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            margin: 16px;
-            overflow: hidden;
-        }
-
-        .artifact-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #2a2a2a;
-            padding: 8px 12px;
-            border-bottom: 1px solid #404040;
-        }
-
-        .artifact-title {
-            font-size: 13px;
-            font-weight: 500;
-            color: #b3b3b3;
-        }
-
-        .artifact-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .artifact-btn {
-            background: none;
-            border: 1px solid #555;
-            color: #b3b3b3;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
-        }
-
-        .artifact-btn:hover {
-            background-color: #404040;
-            color: #fff;
-        }
-        
-        .artifact-btn.view-btn {
-            border-color: #4a90e2;
-            color: #4a90e2;
-        }
-        .artifact-btn.view-btn:hover {
-            background-color: #4a90e2;
-            color: #fff;
-        }
-
-        .artifact-btn svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        .artifact-code {
-            padding: 12px;
-            max-height: 400px;
-            overflow: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #404040 #1a1a1a;
-        }
-        
-        .artifact-code pre {
-            margin: 0;
-        }
-
-        .artifact-code code {
-            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-            font-size: 13px;
-            color: #e5e5e5;
-            white-space: pre;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 240px;
-            }
-            
-            .greeting {
-                font-size: 24px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .action-btn {
-                justify-content: center;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Pastel Toss · Cozy Physics</title>
+  <style>
+    :root {
+      --pink: #FFB5C2;
+      --lavender: #C8B6FF;
+      --mint: #B8E6C8;
+      --peach: #FFD4A3;
+      --sky: #B5D8FF;
+      --cream: #FFF5E1;
+      --lilac: #E0BBE4;
+      --ink: #5B4B6B;
+      --glass: rgba(255, 255, 255, 0.55);
+      --glass-strong: rgba(255, 255, 255, 0.75);
+      --shadow-soft: 0 10px 40px rgba(140, 110, 170, 0.18);
+      --shadow-glow: 0 0 30px rgba(200, 182, 255, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(160deg, #FFE5EC 0%, #E0BBE4 40%, #B5D8FF 100%);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+    }
+
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+
+    /* Safe area padding */
+    .safe-top {
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .safe-left {
+      padding-left: env(safe-area-inset-left);
+    }
+
+    .safe-right {
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* Liquid glass UI */
+    .ui-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .ui-layer>* {
+      pointer-events: auto;
+    }
+
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      border-radius: 28px;
+    }
+
+    /* Top bar */
+    .top-bar {
+      position: absolute;
+      top: calc(16px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 18px;
+      animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .score-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.5);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .score-pill.bump {
+      transform: scale(1.12);
+    }
+
+    .score-pill .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--lavender));
+      box-shadow: 0 0 10px var(--lavender);
+    }
+
+    /* Shape selector */
+    .shape-tray {
+      position: absolute;
+      left: calc(16px + env(safe-area-inset-left));
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px;
+      animation: slideRight 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .shape-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 20px;
+      border: none;
+      background: rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      color: var(--ink);
+    }
+
+    .shape-btn:hover {
+      transform: scale(1.08) rotate(-3deg);
+    }
+
+    .shape-btn:active {
+      transform: scale(0.92);
+    }
+
+    .shape-btn.active {
+      background: linear-gradient(135deg, var(--cream), var(--pink));
+      box-shadow: 0 6px 20px rgba(255, 181, 194, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transform: scale(1.05);
+    }
+
+    .shape-btn .label {
+      position: absolute;
+      left: 68px;
+      background: var(--glass-strong);
+      backdrop-filter: blur(10px);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    .shape-btn:hover .label {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Bottom controls */
+    .bottom-bar {
+      position: absolute;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .action-btn {
+      padding: 12px 22px;
+      border-radius: 22px;
+      border: none;
+      background: linear-gradient(135deg, #fff, #F5E8F5);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 16px rgba(140, 110, 170, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    .action-btn:active {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, var(--pink), var(--lavender));
+      color: white;
+      box-shadow: 0 6px 24px rgba(200, 182, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    /* Power meter */
+    .power-meter {
+      position: absolute;
+      right: calc(20px + env(safe-area-inset-right));
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 200px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .power-meter.visible {
+      opacity: 1;
+    }
+
+    .power-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 0%;
+      background: linear-gradient(to top, var(--mint), var(--peach), var(--pink));
+      border-radius: 10px;
+      transition: height 0.08s linear;
+      box-shadow: 0 0 20px rgba(255, 181, 194, 0.6);
+    }
+
+    /* Hint */
+    .hint {
+      position: absolute;
+      bottom: calc(100px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 18px;
+      border-radius: 18px;
+      background: var(--glass-strong);
+      backdrop-filter: blur(12px);
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.9;
+      animation: pulse 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    @keyframes slideRight {
+      from {
+        opacity: 0;
+        transform: translate(-60%, -50%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(0, -50%);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.75;
+        transform: translateX(-50%) scale(1);
+      }
+
+      50% {
+        opacity: 0.95;
+        transform: translateX(-50%) scale(1.03);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .shape-tray {
+        flex-direction: row;
+        top: auto;
+        bottom: calc(100px + env(safe-area-inset-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .shape-btn .label {
+        display: none;
+      }
+
+      .power-meter {
+        right: calc(12px + env(safe-area-inset-right));
+        height: 160px;
+      }
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <svg class="back-arrow" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                    </svg>
-                    Claude
-                </div>
-                <button class="new-chat-btn" id="newChatBtn">
-                    <div class="plus-icon">+</div>
-                    New chat
-                </button>
-            </div>
-            
-            <div class="sidebar-nav">
-                <div class="nav-item">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
-                    </svg>
-                    Chats
-                </div>
-                <div class="nav-item">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                    </svg>
-                    Projects
-                </div>
-                <div class="nav-item">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Artifacts
-                </div>
-            </div>
-            
-            <div class="sidebar-content">
-                <div class="section-title">Recents</div>
-                <div class="recent-items" id="recentItems">
-                    <div class="empty-state" id="emptyState">
-                        <span style="color: #666; font-size: 13px; font-style: italic;">No recent conversations</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar">H</div>
-                    <div class="user-details">
-                        <div class="user-name">Hassan</div>
-                        <div class="user-plan">Pro plan</div>
-                    </div>
-                    <svg class="chevron-down" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content-area">
-                <!-- Welcome Screen -->
-                <div class="welcome-screen" id="welcomeScreen">
-                    <div class="greeting">
-                        <svg class="sun-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
-                        </svg>
-                        Good morning, Hassan
-                    </div>
-                    
-                    <div class="search-container">
-                        <textarea class="search-input" id="welcomeInput" placeholder="How can I help you today?" rows="1"></textarea>
-                        <div class="search-actions">
-                            <button class="search-btn" id="researchBtn">Research</button>
-                            <button class="send-btn" id="sendBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div style="max-width: 600px; margin-bottom: 15px; padding: 12px; background-color: #2a2a2a; border-radius: 8px; border: 1px solid #404040;">
-                        <div style="font-size: 13px; color: #b3b3b3; text-align: center; margin-bottom: 10px;">
-                            💡 <strong>First time?</strong> A small popup will appear for authentication - please allow it to enable free Claude access via Puter.js
-                        </div>
-                        <div style="font-size: 12px; color: #808080; text-align: center; margin-bottom: 10px;" id="protocolNotice">
-                            <!-- This will be populated by JS -->
-                        </div>
-                        <div style="text-align: center;">
-                            <button id="authButton" style="background-color: #ff6b35; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                                🔐 Authenticate with Puter
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="model-selector">
-                        <button class="model-btn" id="modelSelector">
-                            <span id="currentModel">Claude Sonnet 4</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn" data-prompt="Help me write">
-                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                            </svg>
-                            Write
-                        </button>
-                        <button class="action-btn" data-prompt="Teach me about">
-                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9l-11-6zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
-                            </svg>
-                            Learn
-                        </button>
-                        <button class="action-btn" data-prompt="Help me code">
-                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
-                            </svg>
-                            Code
-                        </button>
-                        <button class="action-btn" data-prompt="Help me with daily tasks">
-                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                            Life stuff
-                        </button>
-                        <button class="action-btn" data-prompt="Help me connect my apps">
-                            <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H6.99C4.79 7 3 8.79 3 11s1.79 4 4 4H11v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1H13V17h4.01c2.2 0 4-1.79 4-4s-1.8-4-4.01-4z"/>
-                            </svg>
-                            Connect apps
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Chat Container -->
-                <div class="chat-container" id="chatContainer">
-                    <div class="chat-messages" id="chatMessages"></div>
-                    
-                    <div class="typing-indicator" id="typingIndicator">
-                        <div class="message-avatar">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                            </svg>
-                        </div>
-                        <span>Claude is typing</span>
-                        <div class="typing-dots">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="search-container">
-                        <textarea class="search-input" id="chatInput" placeholder="Message Claude..." rows="1"></textarea>
-                        <div class="search-actions">
-                            <button class="model-btn" id="chatModelSelector" style="padding: 6px 8px; font-size: 12px;">
-                                <span id="chatCurrentModel">Sonnet 4</span>
-                            </button>
-                            <button class="send-btn" id="chatSendBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<body>
+  <div id="app"></div>
+
+  <div class="ui-layer">
+    <div class="top-bar glass safe-top">
+      <div class="score-pill" id="scorePill">
+        <span class="dot"></span>
+        <span>Score</span>
+        <span id="scoreValue">0</span>
+      </div>
+      <div class="score-pill" id="shotsPill">
+        <span class="dot" style="background:linear-gradient(135deg,var(--mint),var(--sky));box-shadow:0 0 10px var(--mint)"></span>
+        <span>Shots</span>
+        <span id="shotsValue">0</span>
+      </div>
     </div>
 
-    <script>
-        // Global state
-        const availableModels = [
-            { apiName: 'claude-sonnet-4', displayName: 'Claude Sonnet 4', shortName: 'Sonnet 4' },
-            { apiName: 'claude-opus-4', displayName: 'Claude Opus 4', shortName: 'Opus 4' },
-            { apiName: 'claude-3-7-sonnet', displayName: 'Claude 3.7 Sonnet', shortName: 'Sonnet 3.7' }
-        ];
-        let currentModel = availableModels[0].apiName;
-        let chatHistory = [];
-        let isStreaming = false;
-        let recentConversations = [];
-        let currentConversationId = null;
+    <div class="shape-tray glass safe-left" id="shapeTray"></div>
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Initializing Claude interface...');
-            initializeInterface();
-            updateModelDisplay();
-            updateProtocolNotice();
-        });
+    <div class="power-meter" id="powerMeter">
+      <div class="power-fill" id="powerFill"></div>
+    </div>
 
-        function updateProtocolNotice() {
-            const protocolNotice = document.getElementById('protocolNotice');
-            if (protocolNotice) {
-                if (window.location.protocol === 'file:') {
-                    protocolNotice.innerHTML = '✅ <strong>File mode:</strong> Authentication should work perfectly here!';
-                    protocolNotice.style.color = '#22c55e';
-                } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    protocolNotice.innerHTML = '⚠️ <strong>Server mode:</strong> If auth fails, browser profile issues are likely. See guide below.';
-                    protocolNotice.style.color = '#f59e0b';
-                } else {
-                    protocolNotice.innerHTML = '🌐 <strong>Web mode:</strong> Make sure popups are allowed for this domain.';
-                    protocolNotice.style.color = '#3b82f6';
-                }
-            }
-        }
+    <div class="hint" id="hint">Drag the ball back & release to toss ✨</div>
 
-        async function handleManualAuth() {
-            const authButton = document.getElementById('authButton');
-            
-            try {
-                if (authButton) {
-                    authButton.textContent = '🔄 Authenticating...';
-                    authButton.disabled = true;
-                }
-                
-                console.log('🔐 Manually triggering Puter authentication...');
-                
-                // Trigger authentication with a simple test call
-                const authResponse = await puter.ai.chat("test", {model: 'claude-sonnet-4'});
-                
-                console.log('✅ Raw auth response:', authResponse);
+    <div class="bottom-bar glass safe-bottom">
+      <button class="action-btn" id="resetBtn">🔄 New City</button>
+      <button class="action-btn primary" id="tossBtn">🎯 Toss</button>
+    </div>
+  </div>
 
-                // Check for a successful response structure
-                if (authResponse && (authResponse.message?.content || authResponse.success !== false)) {
-                     console.log('✅ Authentication successful!');
-                    if (authButton) {
-                        authButton.textContent = '✅ Authenticated';
-                        authButton.style.backgroundColor = '#22c55e';
-                        setTimeout(() => {
-                           const authBox = authButton.closest('div[style*="max-width: 600px"]');
-                           if(authBox) authBox.style.display = 'none';
-                        }, 2000);
-                    }
-                } else {
-                    throw new Error('Authentication response indicates failure.');
-                }
-                
-            } catch (error) {
-                console.error('❌ Manual authentication failed:', error);
-                
-                if (authButton) {
-                    authButton.textContent = '❌ Auth Failed - Try Guide';
-                    authButton.disabled = false;
-                    authButton.style.backgroundColor = '#dc2626';
-                }
-                
-                // --- ENHANCED ERROR MESSAGE ---
-                const troubleshootGuide = `
-⚠️ AUTHENTICATION FAILED!
+  <script type="importmap">
+    {
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+  }
+}
+</script>
 
-This usually happens because of your browser profile settings (extensions, cache, etc.), NOT a bug in the code.
+  <script type="module">
+    import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import * as CANNON from 'cannon-es';
 
-As you noticed, it works in a new Guest or Incognito profile. Here is how to fix it in your MAIN profile:
+/* ============================================================
+ *  SHAPES REGISTRY
+ *  --------------------------------------------------------
+ *  Each shape is a self-contained module. To add a new shape,
+ *  just add a new entry here with: createMesh, createBody,
+ *  defaultSize, and mass. Think of each entry as its own file
+ *  in a "shapes/" folder.
+ * ============================================================ */
 
---- TROUBLESHOOTING GUIDE ---
+const PASTEL = {
+  pink:     0xFFB5C2,
+  lavender: 0xC8B6FF,
+  mint:     0xB8E6C8,
+  peach:    0xFFD4A3,
+  sky:      0xB5D8FF,
+  cream:    0xFFF5E1,
+  lilac:    0xE0BBE4,
+  rose:     0xFFC9DE,
+};
+const PALETTE = Object.values(PASTEL);
 
-✅ QUICKEST FIX (TRY FIRST):
-1.  🥷 Use Incognito/Private Mode:
-    • Press Ctrl+Shift+N (Chrome/Edge) or Ctrl+Shift+P (Firefox).
-    • Open this HTML file there. This is the fastest workaround.
+// Shared physical material for all shapes (bouncy, cozy)
+const physicsMaterial = new CANNON.Material('cozy');
+const contactMat = new CANNON.ContactMaterial(physicsMaterial, physicsMaterial, {
+  friction: 0.35,
+  restitution: 0.42,
+});
 
-🔧 TO FIX YOUR MAIN PROFILE (TRY IN ORDER):
-2.  🔌 Disable Extensions:
-    • Go to your browser's extensions page (e.g., chrome://extensions).
-    • TEMPORARILY disable ALL extensions, especially ad-blockers (uBlock, AdBlock) and privacy blockers.
-    • Refresh this page and try authenticating again.
+// Shared PBR material factory (shiny pastel with clearcoat)
+function makeMat(color, opts = {}) {
+  return new THREE.MeshPhysicalMaterial({
+    color,
+    roughness: opts.roughness ?? 0.28,
+    metalness: opts.metalness ?? 0.02,
+    clearcoat: opts.clearcoat ?? 0.7,
+    clearcoatRoughness: 0.25,
+    reflectivity: 0.6,
+    envMapIntensity: 1.1,
+    sheen: opts.sheen ?? 0.3,
+    sheenColor: new THREE.Color(0xffffff),
+    ...opts,
+  });
+}
 
-3.  🧹 Clear Site Data for Puter:
-    • Go to puter.com, click the 🔒 icon in the address bar -> Site Settings/Cookies and site data -> Delete data.
-    • Refresh this page and try again.
+/* ---------- shapes/roundedBox.js ---------- */
+const RoundedBox = {
+  id: 'roundedBox',
+  name: 'Rounded Box',
+  icon: '▢',
+  defaultSize: { x: 1, y: 1, z: 1, radius: 0.18 },
+  mass: 1.2,
+  createMesh(size, color) {
+    const geo = new RoundedBoxGeometry(size.x, size.y, size.z, 5, size.radius ?? 0.18);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    // Use sphere approximation for stable, rounded physics
+    const r = Math.min(size.x, size.y, size.z) * 0.48;
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.1 });
+    body.addShape(new CANNON.Sphere(r));
+    return body;
+  },
+};
 
-4.  🍪 Allow Third-Party Cookies:
-    • Go to your browser's cookie settings (e.g., chrome://settings/cookies).
-    • Ensure "Block third-party cookies" is NOT enabled, or add "[*.]puter.com" to the allowed list.
+/* ---------- shapes/capsule.js ---------- */
+const Capsule = {
+  id: 'capsule',
+  name: 'Capsule',
+  icon: '⬭',
+  defaultSize: { radius: 0.45, height: 1.2 },
+  mass: 1.0,
+  createMesh(size, color) {
+    const geo = new THREE.CapsuleGeometry(size.radius, size.height, 12, 20);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.12 });
+    // Compound: cylinder + two spheres
+    body.addShape(new CANNON.Cylinder(size.radius, size.radius, size.height, 12));
+    body.addShape(new CANNON.Sphere(size.radius), new CANNON.Vec3(0, size.height/2, 0));
+    body.addShape(new CANNON.Sphere(size.radius), new CANNON.Vec3(0, -size.height/2, 0));
+    return body;
+  },
+};
 
-If you are running this from a local server (like localhost), the issue is almost certainly extensions or cookie settings.
-`;
-                alert(troubleshootGuide);
-            }
-        }
+/* ---------- shapes/sphere.js ---------- */
+const Sphere = {
+  id: 'sphere',
+  name: 'Sphere',
+  icon: '●',
+  defaultSize: { radius: 0.55 },
+  mass: 0.9,
+  createMesh(size, color) {
+    const geo = new THREE.SphereGeometry(size.radius, 32, 24);
+    return new THREE.Mesh(geo, makeMat(color, { clearcoat: 1.0, roughness: 0.15 }));
+  },
+  createBody(size, mass) {
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.05, angularDamping: 0.08 });
+    body.addShape(new CANNON.Sphere(size.radius));
+    return body;
+  },
+};
 
-        function initializeInterface() {
-            const welcomeInput = document.getElementById('welcomeInput');
-            const chatInput = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const chatSendBtn = document.getElementById('chatSendBtn');
-            const newChatBtn = document.getElementById('newChatBtn');
-            const actionBtns = document.querySelectorAll('.action-btn');
-            const modelSelectors = document.querySelectorAll('#modelSelector, #chatModelSelector');
-            const authButton = document.getElementById('authButton');
+/* ---------- shapes/cylinder.js ---------- */
+const Cylinder = {
+  id: 'cylinder',
+  name: 'Drum',
+  icon: '⬤',
+  defaultSize: { radius: 0.5, height: 0.9 },
+  mass: 1.3,
+  createMesh(size, color) {
+    const geo = new THREE.CylinderGeometry(size.radius, size.radius, size.height, 28, 1);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
+    body.addShape(new CANNON.Cylinder(size.radius, size.radius, size.height, 16));
+    return body;
+  },
+};
 
-            if (authButton) authButton.addEventListener('click', handleManualAuth);
+/* ---------- shapes/torus.js ---------- */
+const Torus = {
+  id: 'torus',
+  name: 'Donut',
+  icon: '◎',
+  defaultSize: { radius: 0.55, tube: 0.22 },
+  mass: 0.8,
+  createMesh(size, color) {
+    const geo = new THREE.TorusGeometry(size.radius, size.tube, 20, 40);
+    return new THREE.Mesh(geo, makeMat(color, { clearcoat: 0.9 }));
+  },
+  createBody(size, mass) {
+    // Approximate with a sphere for stable physics
+    const r = size.radius * 0.75;
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
+    body.addShape(new CANNON.Sphere(r));
+    return body;
+  },
+};
 
-            [welcomeInput, chatInput].forEach(textarea => {
-                if (textarea) {
-                    textarea.addEventListener('input', () => autoResize(textarea));
-                    textarea.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (textarea === welcomeInput) handleWelcomeMessage();
-                            else handleChatMessage();
-                        }
-                    });
-                }
-            });
+/* ---------- shapes/cone.js ---------- */
+const Cone = {
+  id: 'cone',
+  name: 'Cone',
+  icon: '▲',
+  defaultSize: { radius: 0.5, height: 1.1 },
+  mass: 1.0,
+  createMesh(size, color) {
+    // Rounded cone: use lathe for smooth rounded tip
+    const pts = [];
+    const segs = 16;
+    for (let i = 0; i <= segs; i++) {
+      const t = i / segs;
+      const y = -size.height/2 + t * size.height;
+      // Smooth rounded profile
+      const r = size.radius * Math.cos(t * Math.PI * 0.5) * (1 - Math.pow(t, 3) * 0.3);
+      pts.push(new THREE.Vector2(Math.max(0.02, r), y));
+    }
+    const geo = new THREE.LatheGeometry(pts, 28);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    const r = size.radius * 0.6;
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
+    body.addShape(new CANNON.Sphere(r));
+    return body;
+  },
+};
 
-            if (sendBtn) sendBtn.addEventListener('click', handleWelcomeMessage);
-            if (chatSendBtn) chatSendBtn.addEventListener('click', handleChatMessage);
-            if (newChatBtn) newChatBtn.addEventListener('click', startNewChat);
+/* ---------- shapes/pearl.js (glassy) ---------- */
+const Pearl = {
+  id: 'pearl',
+  name: 'Pearl',
+  icon: '◉',
+  defaultSize: { radius: 0.5 },
+  mass: 0.7,
+  createMesh(size, color) {
+    const geo = new THREE.SphereGeometry(size.radius, 32, 24);
+    return new THREE.Mesh(geo, makeMat(color, {
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
+      roughness: 0.08,
+      transmission: 0.4,
+      thickness: 0.8,
+      ior: 1.4,
+    }));
+  },
+  createBody(size, mass) {
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.05, angularDamping: 0.08 });
+    body.addShape(new CANNON.Sphere(size.radius));
+    return body;
+  },
+};
 
-            actionBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const prompt = this.getAttribute('data-prompt');
-                    if (prompt && welcomeInput) {
-                        welcomeInput.value = prompt;
-                        welcomeInput.focus();
-                        autoResize(welcomeInput);
-                    }
-                });
-            });
+// The registry — add new shapes here
+const SHAPES = {
+  roundedBox: RoundedBox,
+  capsule:    Capsule,
+  sphere:     Sphere,
+  cylinder:   Cylinder,
+  torus:      Torus,
+  cone:       Cone,
+  pearl:      Pearl,
+  cube:       Cube,
+};
+const SHAPE_LIST = Object.values(SHAPES);
 
-            modelSelectors.forEach(selector => {
-                if (selector) selector.addEventListener('click', toggleModel);
-            });
+/* ============================================================
+ *  SCENE SETUP
+ * ============================================================ */
 
-            if (welcomeInput) welcomeInput.focus();
-            console.log('✅ Interface initialized');
-        }
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+app.appendChild(renderer.domElement);
 
-        function updateModelDisplay() {
-            const model = availableModels.find(m => m.apiName === currentModel);
-            if (!model) {
-                console.error("Model not found in available models:", currentModel);
-                return;
-            }
-            document.getElementById('currentModel').textContent = model.displayName;
-            document.getElementById('chatCurrentModel').textContent = model.shortName;
-        }
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xF5DCEE, 25, 70);
 
-        function toggleModel() {
-            const currentIndex = availableModels.findIndex(m => m.apiName === currentModel);
-            const nextIndex = (currentIndex + 1) % availableModels.length;
-            currentModel = availableModels[nextIndex].apiName;
-            updateModelDisplay();
-            console.log('🔄 Model switched to:', availableModels[nextIndex].displayName);
-        }
+// Pastel gradient background
+const bgCanvas = document.createElement('canvas');
+bgCanvas.width = 512; bgCanvas.height = 512;
+const bgCtx = bgCanvas.getContext('2d');
+const grad = bgCtx.createLinearGradient(0, 0, 0, 512);
+grad.addColorStop(0, '#FFE5EC');
+grad.addColorStop(0.5, '#E0BBE4');
+grad.addColorStop(1, '#B5D8FF');
+bgCtx.fillStyle = grad;
+bgCtx.fillRect(0, 0, 512, 512);
+const bgTex = new THREE.CanvasTexture(bgCanvas);
+scene.background = bgTex;
 
-        async function handleWelcomeMessage() {
-            const welcomeInput = document.getElementById('welcomeInput');
-            const message = welcomeInput.value.trim();
-            if (!message || isStreaming) return;
-            console.log('📤 Sending welcome message:', message);
-            createNewConversation(message);
-            switchToChatView();
-            await sendMessage(message);
-        }
+// Camera
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 8, 18);
 
-        async function handleChatMessage() {
-            const chatInput = document.getElementById('chatInput');
-            const message = chatInput.value.trim();
-            if (!message || isStreaming) return;
-            console.log('📤 Sending chat message:', message);
-            chatInput.value = '';
-            autoResize(chatInput);
-            await sendMessage(message);
-        }
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 8;
+controls.maxDistance = 40;
+controls.maxPolarAngle = Math.PI * 0.48;
+controls.minPolarAngle = Math.PI * 0.15;
+controls.target.set(0, 2, 0);
+controls.enablePan = false;
+// Touch: one finger on empty = orbit, two finger = zoom
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
 
-        function createNewConversation(firstMessage) {
-            currentConversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            const title = firstMessage.length > 50 ? firstMessage.substring(0, 50) + '...' : firstMessage;
-            const conversation = {
-                id: currentConversationId,
-                title: title,
-                messages: [],
-                timestamp: new Date(),
-                model: currentModel
-            };
-            recentConversations.unshift(conversation);
-            if (recentConversations.length > 10) {
-                recentConversations = recentConversations.slice(0, 10);
-            }
-            updateRecentItems();
-            console.log('📝 Created new conversation:', title);
-        }
+// Environment map (pastel reflections)
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envScene = new THREE.Scene();
+const envGeo = new THREE.SphereGeometry(20, 32, 32);
+const envMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide,
+  uniforms: {},
+  vertexShader: `varying vec3 vPos; void main(){ vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `varying vec3 vPos;
+    void main(){
+      vec3 n = normalize(vPos);
+      vec3 top = vec3(1.0, 0.88, 0.93);
+      vec3 mid = vec3(0.88, 0.78, 0.92);
+      vec3 bot = vec3(0.72, 0.85, 0.98);
+      vec3 c = mix(bot, mid, smoothstep(-1.0, 0.0, n.y));
+      c = mix(c, top, smoothstep(0.0, 1.0, n.y));
+      gl_FragColor = vec4(c, 1.0);
+    }`,
+});
+envScene.add(new THREE.Mesh(envGeo, envMat));
+const envMap = pmrem.fromScene(envScene, 0.04).texture;
+scene.environment = envMap;
+envGeo.dispose(); envMat.dispose(); pmrem.dispose();
 
-        function updateRecentItems() {
-            const recentItemsContainer = document.getElementById('recentItems');
-            recentItemsContainer.innerHTML = '';
-            if (recentConversations.length === 0) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'empty-state';
-                emptyDiv.innerHTML = '<span style="color: #666; font-size: 13px; font-style: italic;">No recent conversations</span>';
-                recentItemsContainer.appendChild(emptyDiv);
-            } else {
-                recentConversations.forEach(conversation => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'recent-item';
-                    itemDiv.textContent = conversation.title;
-                    itemDiv.addEventListener('click', () => loadConversation(conversation.id));
-                    recentItemsContainer.appendChild(itemDiv);
-                });
-            }
-        }
+// Lighting — cozy 3-point
+const hemi = new THREE.HemisphereLight(0xFFE5EC, 0xB5D8FF, 0.7);
+scene.add(hemi);
 
-        function loadConversation(conversationId) {
-            const conversation = recentConversations.find(conv => conv.id === conversationId);
-            if (!conversation) return;
-            currentConversationId = conversationId;
-            chatHistory = [...conversation.messages];
-            currentModel = conversation.model;
-            updateModelDisplay();
-            switchToChatView();
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = '';
-            conversation.messages.forEach(msg => {
-                addMessage(msg.content, msg.role);
-            });
-            document.getElementById('chatInput').focus();
-            console.log('📂 Loaded conversation:', conversation.title);
-        }
+const key = new THREE.DirectionalLight(0xFFF5E1, 1.4);
+key.position.set(8, 14, 6);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = -18; key.shadow.camera.right = 18;
+key.shadow.camera.top = 18; key.shadow.camera.bottom = -18;
+key.shadow.camera.near = 0.5; key.shadow.camera.far = 50;
+key.shadow.bias = -0.0005;
+key.shadow.radius = 5;
+scene.add(key);
 
-        function switchToChatView() {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('chatContainer').classList.add('active');
-            console.log('🔄 Switched to chat view');
-        }
+const fill = new THREE.DirectionalLight(0xC8B6FF, 0.5);
+fill.position.set(-8, 6, -4);
+scene.add(fill);
 
-        function startNewChat() {
-            chatHistory = [];
-            currentConversationId = null;
-            
-            // --- BUG FIX: Reset model to default on new chat ---
-            currentModel = availableModels[0].apiName;
-            updateModelDisplay();
-            
-            const welcomeScreen = document.getElementById('welcomeScreen');
-            const chatContainer = document.getElementById('chatContainer');
-            const chatMessages = document.getElementById('chatMessages');
-            const welcomeInput = document.getElementById('welcomeInput');
-            
-            if (welcomeScreen) welcomeScreen.style.display = 'flex';
-            if (chatContainer) chatContainer.classList.remove('active');
-            if (chatMessages) chatMessages.innerHTML = '';
-            if (welcomeInput) {
-                welcomeInput.value = '';
-                autoResize(welcomeInput);
-                welcomeInput.focus();
-            }
-            autoResize(document.getElementById('chatInput'));
-            
-            console.log('🆕 Started new chat, model reset to default.');
-        }
+const rim = new THREE.DirectionalLight(0xFFB5C2, 0.6);
+rim.position.set(0, 4, -10);
+scene.add(rim);
 
-        async function sendMessage(message) {
-            if (isStreaming) return;
-            
-            console.log('🚀 Starting to send message...');
-            addMessage(message, 'user');
-            showTypingIndicator();
-            setInputState(false);
+/* ============================================================
+ *  PHYSICS WORLD
+ * ============================================================ */
 
-            chatHistory.push({ role: 'user', content: message });
-            
-            try {
-                isStreaming = true;
-                if (typeof puter === 'undefined') { throw new Error('Puter.js is not available.'); }
-                console.log('📡 Calling Puter AI with model:', currentModel, 'and full history.');
-                
-                const response = await puter.ai.chat(chatHistory, {
-                    model: currentModel,
-                    stream: true
-                });
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -18, 0) });
+world.broadphase = new CANNON.SAPBroadphase(world);
+world.allowSleep = true;
+world.solver.iterations = 10;
+world.addContactMaterial(contactMat);
 
-                if (response && response.success === false) {
-                    throw new Error('Authentication required. Please click the authenticate button and allow the popup.');
-                }
-                
-                const { messageContent } = addMessage('', 'assistant');
-                hideTypingIndicator();
-                let fullResponse = '';
-                
-                for await (const part of response) {
-                    if (part?.text) {
-                        fullResponse += part.text;
-                        renderFormattedMessage(fullResponse, messageContent);
-                        scrollToBottom();
-                    }
-                }
-                
-                console.log('✅ Streaming complete.');
-                renderFormattedMessage(fullResponse, messageContent); 
-                
-                chatHistory.push({ role: 'assistant', content: fullResponse });
-                updateCurrentConversation();
-                
-            } catch (error) {
-                console.error('❌ Error in sendMessage:', error);
-                hideTypingIndicator();
-                addMessage('Sorry, I encountered an error: ' + (error.message || 'Unknown error.'), 'assistant', true);
-                
-                // FIX: The API call failed, so the optimistic user message added to the history
-                // resulted in an invalid state. Remove it to allow the user to try again.
-                if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
-                    chatHistory.pop();
-                }
+// Ground (visual + physics)
+const groundGeo = new THREE.CircleGeometry(40, 64);
+const groundMat = makeMat(0xFFF0F5, { roughness: 0.8, clearcoat: 0.2 });
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
 
-            } finally {
-                isStreaming = false;
-                setInputState(true);
-                document.getElementById('chatInput')?.focus();
-            }
-        }
+const groundBody = new CANNON.Body({ mass: 0, material: physicsMaterial });
+groundBody.addShape(new CANNON.Plane());
+groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+world.addBody(groundBody);
 
-        function updateCurrentConversation() {
-            if (!currentConversationId) return;
-            const conversation = recentConversations.find(conv => conv.id === currentConversationId);
-            if (conversation) {
-                conversation.messages = [...chatHistory];
-                conversation.timestamp = new Date();
-                const index = recentConversations.indexOf(conversation);
-                if (index > 0) {
-                    recentConversations.splice(index, 1);
-                    recentConversations.unshift(conversation);
-                    updateRecentItems();
-                }
-            }
-        }
+// Soft walls (invisible, keep things in play)
+function addWall(x, z, rotY, width = 50) {
+  const b = new CANNON.Body({ mass: 0, material: physicsMaterial });
+  b.addShape(new CANNON.Plane());
+  b.position.set(x, 0, z);
+  b.quaternion.setFromEuler(0, rotY, 0);
+  world.addBody(b);
+}
+addWall(0, -20, 0);
+addWall(-20, 0, Math.PI/2);
+addWall(20, 0, -Math.PI/2);
 
-        function addMessage(content, role, isError = false) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
-            messageDiv.setAttribute('data-message-id', messageId);
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            avatar.innerHTML = role === 'user' ? 'H' : `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`;
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            
-            if (role === 'assistant') renderFormattedMessage(content, messageContent);
-            else messageContent.textContent = content;
-            
-            if (isError) messageContent.style.color = '#ff6b6b';
-            
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(messageContent);
-            chatMessages.appendChild(messageDiv);
-            
-            scrollToBottom();
-            return { messageId, messageContent };
-        }
-        
-        function renderFormattedMessage(content, container) {
-            container.innerHTML = ''; // Clear previous content
-            const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-            let lastIndex = 0;
-            let match;
+/* ============================================================
+ *  BUILDING GENERATOR
+ * ============================================================ */
 
-            while ((match = codeBlockRegex.exec(content)) !== null) {
-                if (match.index > lastIndex) {
-                    const textPart = document.createElement('div');
-                    textPart.className = 'message-text-part';
-                    textPart.textContent = content.substring(lastIndex, match.index);
-                    container.appendChild(textPart);
-                }
+const cityGroup = new THREE.Group();
+scene.add(cityGroup);
+const cityBodies = [];
+const cityMeshes = [];
 
-                const [fullMatch, language, code] = match;
-                container.appendChild(createArtifactCanvas(code.trim(), language || 'text'));
-                lastIndex = match.index + fullMatch.length;
-            }
+function rand(a, b) { return a + Math.random() * (b - a); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-            if (lastIndex < content.length) {
-                 const textPart = document.createElement('div');
-                textPart.className = 'message-text-part';
-                textPart.textContent = content.substring(lastIndex);
-                container.appendChild(textPart);
-            }
-            
-            if (container.children.length === 0 && content) {
-                 const textPart = document.createElement('div');
-                textPart.className = 'message-text-part';
-                textPart.textContent = content;
-                container.appendChild(textPart);
-            }
-        }
+function spawnShape(shapeDef, position, scale = 1, color = null) {
+  const size = { ...shapeDef.defaultSize };
+  // Apply scale
+  for (const k in size) if (typeof size[k] === 'number') size[k] *= scale;
 
-        function createArtifactCanvas(code, language) {
-            const canvas = document.createElement('div');
-            canvas.className = 'artifact-canvas';
+  const c = color ?? pick(PALETTE);
+  const mesh = shapeDef.createMesh(size, c);
+  mesh.position.copy(position);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  cityGroup.add(mesh);
 
-            const header = document.createElement('div');
-            header.className = 'artifact-header';
-            
-            const title = document.createElement('div');
-            title.className = 'artifact-title';
-            title.textContent = language ? `${language} code` : 'Code Artifact';
-            
-            const actions = document.createElement('div');
-            actions.className = 'artifact-actions';
+  const body = shapeDef.createBody(size, shapeDef.mass * scale);
+  body.position.set(position.x, position.y, position.z);
+  // Random gentle rotation
+  body.quaternion.setFromEuler(rand(-0.1, 0.1), rand(0, Math.PI*2), rand(-0.1, 0.1));
+  world.addBody(body);
 
-            if (language.toLowerCase() === 'html') {
-                const viewBtn = document.createElement('button');
-                viewBtn.className = 'artifact-btn view-btn';
-                viewBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> View`;
-                viewBtn.onclick = () => {
-                    const blob = new Blob([code], { type: 'text/html' });
-                    window.open(URL.createObjectURL(blob), '_blank');
-                };
-                actions.appendChild(viewBtn);
-            }
-            
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'artifact-btn';
-            const copyIcon = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy`;
-            copyBtn.innerHTML = copyIcon;
-            copyBtn.onclick = () => {
-                navigator.clipboard.writeText(code).then(() => {
-                    copyBtn.textContent = 'Copied!';
-                    setTimeout(() => { copyBtn.innerHTML = copyIcon; }, 2000);
-                });
-            };
+  mesh.userData.body = body;
+  body.userData.mesh = mesh;
+  body.userData.shapeDef = shapeDef;
+  body.userData.originalPos = position.clone();
+  body.userData.scored = false;
 
-            const downloadBtn = document.createElement('button');
-            downloadBtn.className = 'artifact-btn';
-            downloadBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Download`;
-            downloadBtn.onclick = () => {
-                const extensionMap = { javascript: 'js', python: 'py', html: 'html', css: 'css', json: 'json', java: 'java', csharp: 'cs', cpp: 'cpp', ruby: 'rb', go: 'go', rust: 'rs', shell: 'sh', bash: 'sh' };
-                const extension = extensionMap[language.toLowerCase()] || 'txt';
-                const filename = `claude-code.${extension}`;
-                const blob = new Blob([code], { type: 'text/plain' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = filename;
-                a.click();
-                a.remove();
-            };
+  cityMeshes.push(mesh);
+  cityBodies.push(body);
+  return { mesh, body };
+}
 
-            actions.appendChild(copyBtn);
-            actions.appendChild(downloadBtn);
-            header.appendChild(title);
-            header.appendChild(actions);
+function generateCity() {
+  // Clear existing
+  for (const m of cityMeshes) { cityGroup.remove(m); m.geometry?.dispose(); }
+  for (const b of cityBodies) world.removeBody(b);
+  cityMeshes.length = 0;
+  cityBodies.length = 0;
 
-            const codeArea = document.createElement('div');
-            codeArea.className = 'artifact-code';
-            const pre = document.createElement('pre');
-            const codeEl = document.createElement('code');
-            codeEl.textContent = code;
-            pre.appendChild(codeEl);
-            codeArea.appendChild(pre);
+  // Generate clusters of towers
+  const clusterCount = 5 + Math.floor(Math.random() * 3);
+  const radius = 7;
 
-            canvas.appendChild(header);
-            canvas.appendChild(codeArea);
+  for (let c = 0; c < clusterCount; c++) {
+    const angle = (c / clusterCount) * Math.PI * 2 + rand(-0.2, 0.2);
+    const dist = rand(3, radius);
+    const cx = Math.cos(angle) * dist;
+    const cz = Math.sin(angle) * dist - 2;
 
-            return canvas;
-        }
+    const towerHeight = Math.floor(rand(3, 7));
+    let y = 0;
 
-        function showTypingIndicator() {
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.style.display = 'flex';
-                scrollToBottom();
-            }
-        }
+    for (let i = 0; i < towerHeight; i++) {
+      const shape = pick(SHAPE_LIST);
+      const scale = rand(0.7, 1.2) * (1 - i * 0.05);
+      const offsetX = rand(-0.3, 0.3);
+      const offsetZ = rand(-0.3, 0.3);
+      const pos = new THREE.Vector3(cx + offsetX, y + 0.6, cz + offsetZ);
+      spawnShape(shape, pos, scale);
+      y += rand(0.9, 1.3);
+    }
+  }
 
-        function hideTypingIndicator() {
-            document.getElementById('typingIndicator').style.display = 'none';
-        }
+  // A few scattered single shapes
+  for (let i = 0; i < 8; i++) {
+    const shape = pick(SHAPE_LIST);
+    const angle = rand(0, Math.PI * 2);
+    const dist = rand(2, 10);
+    const pos = new THREE.Vector3(Math.cos(angle) * dist, 0.5, Math.sin(angle) * dist - 2);
+    spawnShape(shape, pos, rand(0.6, 1.0));
+  }
+}
 
-        function setInputState(enabled) {
-            const inputs = [
-                document.getElementById('welcomeInput'),
-                document.getElementById('chatInput'),
-                document.getElementById('sendBtn'),
-                document.getElementById('chatSendBtn')
-            ];
-            inputs.forEach(input => {
-                if (input) {
-                    input.disabled = !enabled;
-                    input.style.opacity = enabled ? '1' : '0.6';
-                }
-            });
-        }
+generateCity();
 
-        function scrollToBottom() {
-            const chatMessages = document.getElementById('chatMessages');
-            if (chatMessages) {
-                requestAnimationFrame(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                });
-            }
-        }
+/* ============================================================
+ *  PROJECTILE (the ball you throw)
+ * ============================================================ */
 
-        function autoResize(textarea) {
-            if (!textarea) return;
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
-        }
-    </script>
+const LAUNCH_POS = new THREE.Vector3(0, 1.2, 10);
+const ballGeo = new THREE.SphereGeometry(0.45, 32, 24);
+const ballMat = makeMat(0xFFC9DE, {
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.05,
+  roughness: 0.1,
+  emissive: 0xFFB5C2,
+  emissiveIntensity: 0.15,
+});
+const ballMesh = new THREE.Mesh(ballGeo, ballMat);
+ballMesh.castShadow = true;
+ballMesh.position.copy(LAUNCH_POS);
+scene.add(ballMesh);
+
+const ballBody = new CANNON.Body({
+  mass: 2.2,
+  material: physicsMaterial,
+  linearDamping: 0.05,
+  angularDamping: 0.1,
+  collisionResponse: true,
+});
+ballBody.addShape(new CANNON.Sphere(0.45));
+ballBody.position.set(LAUNCH_POS.x, LAUNCH_POS.y, LAUNCH_POS.z);
+ballBody.type = CANNON.Body.KINEMATIC;
+world.addBody(ballBody);
+
+// Ball glow
+const glowGeo = new THREE.SphereGeometry(0.6, 24, 16);
+const glowMat = new THREE.ShaderMaterial({
+  transparent: true,
+  depthWrite: false,
+  uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(0xFFB5C2) } },
+  vertexShader: `varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `uniform vec3 uColor; uniform float uTime; varying vec3 vN;
+    void main(){
+      float rim = 1.0 - abs(dot(vN, vec3(0.0, 0.0, 1.0)));
+      rim = pow(rim, 2.5);
+      float pulse = 0.85 + 0.15 * sin(uTime * 2.0);
+      gl_FragColor = vec4(uColor, rim * 0.6 * pulse);
+    }`,
+});
+const ballGlow = new THREE.Mesh(glowGeo, glowMat);
+ballMesh.add(ballGlow);
+
+// Trajectory preview
+const trajPoints = 40;
+const trajGeo = new THREE.BufferGeometry();
+const trajPos = new Float32Array(trajPoints * 3);
+trajGeo.setAttribute('position', new THREE.BufferAttribute(trajPos, 3));
+const trajMat = new THREE.LineDashedMaterial({
+  color: 0xC8B6FF,
+  dashSize: 0.2,
+  gapSize: 0.15,
+  transparent: true,
+  opacity: 0.7,
+});
+const trajLine = new THREE.Line(trajGeo, trajMat);
+trajLine.computeLineDistances();
+trajLine.visible = false;
+scene.add(trajLine);
+
+/* ============================================================
+ *  PARTICLES (impact puffs)
+ * ============================================================ */
+
+const particlePool = [];
+const particleGeo = new THREE.SphereGeometry(0.08, 8, 6);
+
+function spawnPuff(pos, color, count = 8) {
+  for (let i = 0; i < count; i++) {
+    const mat = makeMat(color, { roughness: 0.5, clearcoat: 0.5, transparent: true });
+    const m = new THREE.Mesh(particleGeo, mat);
+    m.position.copy(pos);
+    const vel = new THREE.Vector3(rand(-1, 1), rand(0.5, 2), rand(-1, 1)).multiplyScalar(rand(0.5, 1.5));
+    m.userData = { vel, life: 1.0, decay: rand(0.8, 1.5) };
+    scene.add(m);
+    particlePool.push(m);
+  }
+}
+
+function updateParticles(dt) {
+  for (let i = particlePool.length - 1; i >= 0; i--) {
+    const p = particlePool[i];
+    p.userData.life -= dt * p.userData.decay;
+    if (p.userData.life <= 0) {
+      scene.remove(p);
+      p.material.dispose();
+      particlePool.splice(i, 1);
+      continue;
+    }
+    p.userData.vel.y -= 6 * dt;
+    p.position.addScaledVector(p.userData.vel, dt);
+    p.material.opacity = p.userData.life;
+    p.scale.setScalar(p.userData.life);
+  }
+}
+
+/* ============================================================
+ *  THROW CONTROLS
+ * ============================================================ */
+
+let isAiming = false;
+let aimStart = new THREE.Vector2();
+let aimCurrent = new THREE.Vector2();
+let throwPower = 0;
+let throwDir = new THREE.Vector3();
+const MAX_POWER = 22;
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+function getPointer(e) {
+  const t = e.touches ? e.touches[0] : e;
+  return { x: t.clientX, y: t.clientY };
+}
+
+function isOverUI(e) {
+  const t = e.touches ? e.touches[0] : e;
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  return el && el.closest('.ui-layer');
+}
+
+function onPointerDown(e) {
+  if (isOverUI(e)) return;
+  const p = getPointer(e);
+  pointer.x = (p.x / window.innerWidth) * 2 - 1;
+  pointer.y = -(p.y / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObject(ballMesh, true);
+  if (hits.length > 0) {
+    isAiming = true;
+    aimStart.set(p.x, p.y);
+    aimCurrent.set(p.x, p.y);
+    controls.enabled = false;
+    document.getElementById('powerMeter').classList.add('visible');
+    document.getElementById('hint').style.display = 'none';
+    e.preventDefault();
+  }
+}
+
+function onPointerMove(e) {
+  if (!isAiming) return;
+  const p = getPointer(e);
+  aimCurrent.set(p.x, p.y);
+  const dx = aimStart.x - aimCurrent.x;
+  const dy = aimStart.y - aimCurrent.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  throwPower = Math.min(dist / 200, 1) * MAX_POWER;
+  document.getElementById('powerFill').style.height = (throwPower / MAX_POWER * 100) + '%';
+
+  // Direction: opposite of drag, projected into world
+  const camRight = new THREE.Vector3();
+  const camUp = new THREE.Vector3();
+  camera.getWorldDirection(new THREE.Vector3());
+  camRight.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
+  camUp.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
+
+  throwDir.set(0, 0, 0)
+    .addScaledVector(camRight, dx / 200)
+    .addScaledVector(camUp, -dy / 200)
+    .normalize();
+  // Bias forward (toward city)
+  throwDir.z = -Math.abs(throwDir.z) - 0.5;
+  throwDir.y = Math.max(throwDir.y, 0.2);
+  throwDir.normalize();
+
+  updateTrajectoryPreview();
+  e.preventDefault();
+}
+
+function onPointerUp(e) {
+  if (!isAiming) return;
+  isAiming = false;
+  controls.enabled = true;
+  document.getElementById('powerMeter').classList.remove('visible');
+  if (throwPower > 1) {
+    launchBall();
+  }
+  throwPower = 0;
+  trajLine.visible = false;
+}
+
+function updateTrajectoryPreview() {
+  if (throwPower < 1) { trajLine.visible = false; return; }
+  trajLine.visible = true;
+  const vel = throwDir.clone().multiplyScalar(throwPower);
+  const pos = LAUNCH_POS.clone();
+  const v = vel.clone();
+  const dt = 0.05;
+  const attr = trajGeo.attributes.position;
+  for (let i = 0; i < trajPoints; i++) {
+    attr.setXYZ(i, pos.x, pos.y, pos.z);
+    v.y -= 18 * dt;
+    pos.addScaledVector(v, dt);
+    if (pos.y < 0) break;
+  }
+  attr.needsUpdate = true;
+  trajLine.computeLineDistances();
+}
+
+let resetTimeout = null;
+
+function launchBall() {
+  if (resetTimeout) clearTimeout(resetTimeout);
+  const def = SHAPES[currentShapeId];
+  const vel = throwDir.clone().multiplyScalar(throwPower);
+  ballBody.mass = def ? def.mass : 2.2;
+  ballBody.type = CANNON.Body.DYNAMIC;
+  ballBody.updateMassProperties();
+  ballBody.velocity.set(vel.x, vel.y, vel.z);
+  ballBody.angularVelocity.set(rand(-5, 5), rand(-5, 5), rand(-5, 5));
+  ballBody.wakeUp();
+  shots++;
+  updateUI();
+
+  // Reset after flight
+  resetTimeout = setTimeout(resetBall, 4500);
+}
+
+function resetBall() {
+  if (resetTimeout) {
+    clearTimeout(resetTimeout);
+    resetTimeout = null;
+  }
+  ballBody.type = CANNON.Body.KINEMATIC;
+  ballBody.velocity.set(0, 0, 0);
+  ballBody.angularVelocity.set(0, 0, 0);
+  ballBody.position.set(LAUNCH_POS.x, LAUNCH_POS.y, LAUNCH_POS.z);
+  ballBody.quaternion.set(0, 0, 0, 1);
+}
+
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+renderer.domElement.addEventListener('pointermove', onPointerMove);
+renderer.domElement.addEventListener('pointerup', onPointerUp);
+renderer.domElement.addEventListener('pointercancel', onPointerUp);
+
+/* ============================================================
+ *  UI
+ * ============================================================ */
+
+let currentShapeId = 'roundedBox';
+let score = 0;
+let shots = 0;
+
+const tray = document.getElementById('shapeTray');
+SHAPE_LIST.forEach((s, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'shape-btn' + (i === 0 ? ' active' : '');
+  btn.dataset.id = s.id;
+  btn.innerHTML = `${s.icon}<span class="label">${s.name}</span>`;
+  btn.addEventListener('click', () => {
+    currentShapeId = s.id;
+    document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateBallAppearance();
+  });
+  tray.appendChild(btn);
+});
+
+function updateBallAppearance() {
+  const def = SHAPES[currentShapeId];
+  const size = { ...def.defaultSize };
+  // Normalize so ball fits in ~0.45 radius
+  const maxDim = Math.max(size.x || size.radius * 2 || 1, size.y || size.radius * 2 || 1, size.z || size.radius * 2 || 1);
+  const scale = 0.9 / maxDim;
+  for (const k in size) if (typeof size[k] === 'number') size[k] *= scale;
+
+  const newGeo = def.createMesh(size, 0xFFC9DE).geometry;
+  ballMesh.geometry.dispose();
+  ballMesh.geometry = newGeo;
+
+  // Replace physics shape
+  while (ballBody.shapes.length) {
+    ballBody.removeShape(ballBody.shapes[0]);
+  }
+  const tmp = def.createBody(size, def.mass);
+  tmp.shapes.forEach((sh, i) => {
+    ballBody.addShape(sh, tmp.shapeOffsets[i], tmp.shapeOrientations[i]);
+  });
+  ballBody.mass = def.mass;
+  ballBody.updateMassProperties();
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  generateCity();
+  resetBall();
+  score = 0;
+  shots = 0;
+  updateUI();
+});
+
+document.getElementById('tossBtn').addEventListener('click', () => {
+  // Quick toss with random-ish direction
+  resetBall();
+  const dir = new THREE.Vector3(rand(-0.3, 0.3), rand(0.4, 0.7), -1).normalize();
+  throwDir.copy(dir);
+  throwPower = MAX_POWER * 0.75;
+  launchBall();
+});
+
+function updateUI() {
+  document.getElementById('scoreValue').textContent = score;
+  document.getElementById('shotsValue').textContent = shots;
+  const pill = document.getElementById('scorePill');
+  pill.classList.add('bump');
+  setTimeout(() => pill.classList.remove('bump'), 300);
+}
+
+/* ============================================================
+ *  SCORING
+ * ============================================================ */
+
+function checkScore() {
+  for (const b of cityBodies) {
+    if (b.userData.scored) continue;
+    const orig = b.userData.originalPos;
+    const dx = b.position.x - orig.x;
+    const dy = b.position.y - orig.y;
+    const dz = b.position.z - orig.z;
+    const dist2 = dx*dx + dy*dy + dz*dz;
+    const speed2 = b.velocity.x*b.velocity.x + b.velocity.y*b.velocity.y + b.velocity.z*b.velocity.z;
+    if (dist2 > 1.5 || speed2 > 4) {
+      b.userData.scored = true;
+      score++;
+      updateUI();
+      // Puff
+      const c = b.userData.mesh.material.color.getHex();
+      spawnPuff(new THREE.Vector3(b.position.x, b.position.y, b.position.z), c, 6);
+    }
+  }
+}
+
+/* ============================================================
+ *  MAIN LOOP
+ * ============================================================ */
+
+const clock = new THREE.Clock();
+const fixedDt = 1 / 60;
+let acc = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  acc += dt;
+
+  // Fixed-step physics
+  while (acc >= fixedDt) {
+    world.step(fixedDt);
+    acc -= fixedDt;
+  }
+
+  // Sync meshes
+  for (const b of cityBodies) {
+    const m = b.userData.mesh;
+    m.position.copy(b.position);
+    m.quaternion.copy(b.quaternion);
+  }
+  ballMesh.position.copy(ballBody.position);
+  ballMesh.quaternion.copy(ballBody.quaternion);
+
+  // Ball glow pulse
+  glowMat.uniforms.uTime.value = clock.elapsedTime;
+
+  // Particles
+  updateParticles(dt);
+
+  // Score check (throttled)
+  if (ballBody.type === CANNON.Body.DYNAMIC) checkScore();
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ============================================================
+ *  RESIZE
+ * ============================================================ */
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', () => setTimeout(onResize, 200));
+
+// Prevent iOS bounce
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('touchmove', e => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+  </script>
 </body>
+
 </html>
