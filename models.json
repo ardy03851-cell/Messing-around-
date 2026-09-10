@@ -1,203 +1,114 @@
-
-    "models": [
-        {
-            "id": "deepseek-v4-flash",
-            "name": "DeepSeek V4 Flash",
-            "provider": "anyai.ai",
-            "model": "deepseek/deepseek-v4-flash",
-            "apiKey": "sk-GwXuS2_d1UIVFE8Qz6AK_w",
-            "icon": "deepseek",
-            "color": "#0066FF"
-        },
-        {
-            "id": "gpt-4o",
-            "name": "GPT-4o",
-            "provider": "openai",
-            "model": "gpt-4o",
-            "apiKey": "",
-            "icon": "openai",
-            "color": "#10A37F"
-        },
-        {
-            "id": "gpt-4-turbo",
-            "name": "GPT-4 Turbo",
-            "provider": "openai",
-            "model": "gpt-4-turbo",
-            "apiKey": "",
-            "icon": "openai",
-            "color": "#10A37F"
-        },
-        {
-            "id": "claude-3-5-sonnet",
-            "name": "Claude 3.5 Sonnet",
-            "provider": "anthropic",
-            "model": "claude-3-5-sonnet-20241022",
-            "apiKey": "",
-            "icon": "claude",
-            "color": "#D97757"
-        },
-        {
-            "id": "claude-3-opus",
-            "name": "Claude 3 Opus",
-            "provider": "anthropic",
-            "model": "claude-3-opus-20240229",
-            "apiKey": "",
-            "icon": "claude",
-            "color": "#D97757"
-        },
-        {
-            "id": "gemini-pro",
-            "name": "Gemini Pro",
-            "provider": "google",
-            "model": "gemini-pro",
-            "apiKey": "",
-            "icon": "gemini",
-            "color": "#4285F4"
-        },
-        {
-            "id": "gemini-ultra",
-            "name": "Gemini Ultra",
-            "provider": "google",
-            "model": "gemini-ultra",
-            "apiKey": "",
-            "icon": "gemini",
-            "color": "#4285F4"
-        },
-        {
-            "id": "llama-3-70b",
-            "name": "Llama 3 70B",
-            "provider": "meta",
-            "model": "llama-3-70b-instruct",
-            "apiKey": "",
-            "icon": "llama",
-            "color": "#0668E1"
-        },
-        {
-            "id": "llama-3-8b",
-            "name": "Llama 3 8B",
-            "provider": "meta",
-            "model": "llama-3-8b-instruct",
-            "apiKey": "",
-            "icon": "llama",
-            "color": "#0668E1"
-        },
-        {
-            "id": "mistral-large",
-            "name": "Mistral Large",
-            "provider": "mistral",
-            "model": "mistral-large-latest",
-            "apiKey": "",
-            "icon": "mistral",
-            "color": "#FF7000"
-        },
-        {
-            "id": "mistral-medium",
-            "name": "Mistral Medium",
-            "provider": "mistral",
-            "model": "mistral-medium-latest",
-            "apiKey": "",
-            "icon": "mistral",
-            "color": "#FF7000"
-        },
-        {
-            "id": "cohere-command-r",
-            "name": "Cohere Command R+",
-            "provider": "cohere",
-            "model": "command-r-plus",
-            "apiKey": "",
-            "icon": "cohere",
-            "color": "#3F51B5"
-        },
-        {
-            "id": "cohere-command",
-            "name": "Cohere Command",
-            "provider": "cohere",
-            "model": "command",
-            "apiKey": "",
-            "icon": "cohere",
-            "color": "#3F51B5"
-        },
-        {
-            "id": "qwen-max",
-            "name": "Qwen Max",
-            "provider": "alibaba",
-            "model": "qwen-max",
-            "apiKey": "",
-            "icon": "qwen",
-            "color": "#615CED"
-        },
-        {
-            "id": "qwen-plus",
-            "name": "Qwen Plus",
-            "provider": "alibaba",
-            "model": "qwen-plus",
-            "apiKey": "",
-            "icon": "qwen",
-            "color": "#615CED"
-        },
-        {
-            "id": "grok-beta",
-            "name": "Grok Beta",
-            "provider": "xai",
-            "model": "grok-beta",
-            "apiKey": "",
-            "icon": "grok",
-            "color": "#FFFFFF"
-        },
-        {
-            "id": "palm-2",
-            "name": "PaLM 2",
-            "provider": "google",
-            "model": "palm-2-chat-bison",
-            "apiKey": "",
-            "icon": "gemini",
-            "color": "#4285F4"
-        },
-        {
-            "id": "yi-34b",
-            "name": "Yi-34B",
-            "provider": "01-ai",
-            "model": "yi-34b-chat",
-            "apiKey": "",
-            "icon": "yi",
-            "color": "#1E88E5"
-        },
-        {
-            "id": "mixtral-8x7b",
-            "name": "Mixtral 8x7B",
-            "provider": "mistral",
-            "model": "mixtral-8x7b-instruct-v0.1",
-            "apiKey": "",
-            "icon": "mistral",
-            "color": "#FF7000"
-        },
-        {
-            "id": "phi-3",
-            "name": "Phi-3",
-            "provider": "microsoft",
-            "model": "phi-3-medium-128k-instruct",
-            "apiKey": "",
-            "icon": "phi",
-            "color": "#00BCF2"
-        },
-        {
-            "id": "dolphin-mixtral",
-            "name": "Dolphin Mixtral",
-            "provider": "cognitive-computations",
-            "model": "dolphin-mixtral-8x7b",
-            "apiKey": "",
-            "icon": "dolphin",
-            "color": "#00ACC1"
-        },
-        {
-            "id": "wizardlm-2",
-            "name": "WizardLM-2",
-            "provider": "microsoft",
-            "model": "wizardlm-2-8x22b",
-            "apiKey": "",
-            "icon": "wizard",
-            "color": "#7B1FA2"
-        }
-    ]
+{
+  "providers": [
+    {
+      "id": "anyai",
+      "name": "AnyAI",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=anyai&backgroundColor=c0aede"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=openai&backgroundColor=b6e3f4"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=anthropic&backgroundColor=d1d4f9"
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=google&backgroundColor=ffd5dc"
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral AI",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=mistral&backgroundColor=ffdfbf"
+    },
+    {
+      "id": "cohere",
+      "name": "Cohere",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=cohere&backgroundColor=c0aede"
+    },
+    {
+      "id": "meta",
+      "name": "Meta",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=meta&backgroundColor=b6e3f4"
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=perplexity&backgroundColor=d1d4f9"
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=groq&backgroundColor=ffd5dc"
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=hf&backgroundColor=ffdfbf"
+    },
+    {
+      "id": "stability",
+      "name": "Stability AI",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=stability&backgroundColor=c0aede"
+    },
+    {
+      "id": "replicate",
+      "name": "Replicate",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=replicate&backgroundColor=b6e3f4"
+    },
+    {
+      "id": "together",
+      "name": "Together AI",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=together&backgroundColor=d1d4f9"
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks AI",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=fireworks&backgroundColor=ffd5dc"
+    },
+    {
+      "id": "deepinfra",
+      "name": "DeepInfra",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=deepinfra&backgroundColor=ffdfbf"
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=ollama&backgroundColor=c0aede"
+    },
+    {
+      "id": "lmstudio",
+      "name": "LM Studio",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=lmstudio&backgroundColor=b6e3f4"
+    },
+    {
+      "id": "custom1",
+      "name": "Custom Provider 1",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=custom1&backgroundColor=d1d4f9"
+    },
+    {
+      "id": "custom2",
+      "name": "Custom Provider 2",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=custom2&backgroundColor=ffd5dc"
+    },
+    {
+      "id": "custom3",
+      "name": "Custom Provider 3",
+      "icon": "https://api.dicebear.com/7.x/shapes/svg?seed=custom3&backgroundColor=ffdfbf"
+    }
+  ],
+  "models": [
+    {
+      "id": "deepseek-v4-flash",
+      "name": "DeepSeek V4 Flash",
+      "providerId": "anyai",
+      "apiEndpoint": "https://api.anyai.ai/v1/chat/completions",
+      "apiKey": "sk-GwXuS2_d1UIVFE8Qz6AK_w",
+      "modelName": "deepseek/deepseek-v4-flash"
+    }
+  ]
 }
-
