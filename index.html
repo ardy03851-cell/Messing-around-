@@ -1,1752 +1,833 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>AI Code Studio</title>
-    <style>
-        :root {
-            --primary: #615CED;
-            --primary-light: #7B76F5;
-            --primary-dark: #4A45C9;
-            --bg-dark: #0D0D12;
-            --bg-card: rgba(20, 20, 30, 0.6);
-            --bg-glass: rgba(255, 255, 255, 0.05);
-            --border-glass: rgba(255, 255, 255, 0.1);
-            --text-primary: #FFFFFF;
-            --text-secondary: #A0A0B0;
-            --text-muted: #606070;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --error: #EF4444;
-            --code-bg: #1E1E2E;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 50%, #16213e 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        }
-
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            margin-bottom: 24px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-md);
-        }
-
-        .logo-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
-
-        .logo-text {
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .icon-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-md);
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .icon-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .icon-btn:hover::before {
-            opacity: 1;
-        }
-
-        .icon-btn:active {
-            transform: scale(0.95);
-        }
-
-        .icon-btn svg {
-            width: 20px;
-            height: 20px;
-            fill: var(--text-secondary);
-            transition: fill 0.3s ease;
-            position: relative;
-            z-index: 1;
-        }
-
-        .icon-btn:hover svg {
-            fill: var(--text-primary);
-        }
-
-        .icon-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .icon-btn.active svg {
-            fill: white;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 24px;
-            min-height: 0;
-        }
-
-        @media (max-width: 1024px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-xl);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            box-shadow: var(--shadow-md);
-            overflow-y: auto;
-            max-height: calc(100vh - 140px);
-        }
-
-        .sidebar-section {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .section-title {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            padding: 0 4px;
-        }
-
-        /* Model Selection */
-        .model-selector {
-            position: relative;
-        }
-
-        .selected-model {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .selected-model:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .model-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .model-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
-
-        .model-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .model-name {
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .model-provider {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .dropdown-arrow {
-            width: 20px;
-            height: 20px;
-            fill: var(--text-muted);
-            transition: transform 0.3s ease;
-        }
-
-        .model-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            right: 0;
-            background: rgba(20, 20, 30, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .model-dropdown.open {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .model-option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .model-option:first-child {
-            border-radius: var(--radius-md) var(--radius-md) 0 0;
-        }
-
-        .model-option:last-child {
-            border-radius: 0 0 var(--radius-md) var(--radius-md);
-        }
-
-        .model-option:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .model-option.selected {
-            background: rgba(97, 92, 237, 0.2);
-        }
-
-        /* Files Section */
-        .file-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .file-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .file-item.active {
-            background: rgba(97, 92, 237, 0.2);
-            border-color: var(--primary);
-        }
-
-        .file-icon {
-            width: 32px;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .file-icon svg {
-            width: 18px;
-            height: 18px;
-            fill: var(--text-secondary);
-        }
-
-        .file-name {
-            font-size: 13px;
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .add-file-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px;
-            background: var(--bg-glass);
-            border: 1px dashed var(--border-glass);
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .add-file-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .add-file-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: currentColor;
-        }
-
-        /* Chat Area */
-        .chat-area {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-xl);
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .message {
-            display: flex;
-            gap: 16px;
-            animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes messageSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .message-avatar.user {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .message-avatar.ai {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-        }
-
-        .message-avatar svg {
-            width: 20px;
-            height: 20px;
-            fill: white;
-        }
-
-        .message-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .message-sender {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .message-time {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .message-text {
-            font-size: 15px;
-            line-height: 1.6;
-            color: var(--text-primary);
-        }
-
-        .message-text p {
-            margin-bottom: 12px;
-        }
-
-        .message-text p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Code Block */
-        .code-block {
-            background: var(--code-bg);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            margin-top: 12px;
-            animation: codeBlockExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes codeBlockExpand {
-            from {
-                opacity: 0;
-                transform: scaleY(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scaleY(1);
-            }
-        }
-
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid var(--border-glass);
-        }
-
-        .code-language {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .code-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .code-action-btn {
-            padding: 6px 12px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .code-action-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-        }
-
-        .code-action-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
-        }
-
-        .code-content {
-            padding: 16px;
-            overflow-x: auto;
-        }
-
-        .code-content pre {
-            margin: 0;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            color: #E0E0E0;
-        }
-
-        .code-content code {
-            font-family: inherit;
-        }
-
-        /* Input Area */
-        .input-area {
-            padding: 20px 24px;
-            background: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid var(--border-glass);
-        }
-
-        .input-wrapper {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-
-        .input-container {
-            flex: 1;
-            position: relative;
-        }
-
-        .message-input {
-            width: 100%;
-            padding: 16px 20px;
-            padding-right: 60px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-lg);
-            color: var(--text-primary);
-            font-size: 15px;
-            line-height: 1.5;
-            resize: none;
-            min-height: 56px;
-            max-height: 200px;
-            font-family: inherit;
-            transition: all 0.3s ease;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .message-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .send-btn {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border: none;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            flex-shrink: 0;
-            box-shadow: var(--shadow-md);
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .send-btn svg {
-            width: 20px;
-            height: 20px;
-            fill: white;
-        }
-
-        /* Settings Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: rgba(20, 20, 30, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-xl);
-            width: 100%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transform: scale(0.9) translateY(20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .modal-overlay.active .modal {
-            transform: scale(1) translateY(0);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px;
-            border-bottom: 1px solid var(--border-glass);
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            width: 36px;
-            height: 36px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-close svg {
-            width: 20px;
-            height: 20px;
-            fill: var(--text-secondary);
-        }
-
-        .modal-body {
-            padding: 24px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .settings-group {
-            margin-bottom: 24px;
-        }
-
-        .settings-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .settings-input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .settings-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .settings-select {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .settings-select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn svg {
-            width: 18px;
-            height: 18px;
-            fill: currentColor;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-secondary {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-full {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .add-model-form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding: 20px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            margin-top: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .models-list {
-            margin-top: 20px;
-        }
-
-        .model-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            margin-bottom: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .model-card:hover {
-            border-color: var(--primary);
-        }
-
-        .model-card-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .model-card-name {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .model-card-details {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .model-card-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-icon-btn {
-            width: 36px;
-            height: 36px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .action-icon-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .action-icon-btn.delete:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: var(--error);
-        }
-
-        .action-icon-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: var(--text-secondary);
-        }
-
-        .action-icon-btn.delete:hover svg {
-            fill: var(--error);
-        }
-
-        /* Loading State */
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 12px 16px;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: typingBounce 1.4s infinite ease-in-out both;
-        }
-
-        .typing-dot:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-
-        @keyframes typingBounce {
-            0%, 80%, 100% {
-                transform: scale(0);
-            }
-            40% {
-                transform: scale(1);
-            }
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(20, 20, 30, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-md);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-lg);
-            z-index: 2000;
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        .toast-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .toast-icon.success {
-            background: var(--success);
-        }
-
-        .toast-icon.error {
-            background: var(--error);
-        }
-
-        .toast-icon svg {
-            width: 14px;
-            height: 14px;
-            fill: white;
-        }
-
-        .toast-message {
-            font-size: 14px;
-            color: var(--text-primary);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .app-container {
-                padding: 12px;
-            }
-
-            .header {
-                margin-bottom: 16px;
-            }
-
-            .logo-text {
-                font-size: 18px;
-            }
-
-            .main-content {
-                gap: 16px;
-            }
-
-            .sidebar {
-                max-height: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 500;
-                transform: translateX(-100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .chat-messages {
-                padding: 16px;
-            }
-
-            .input-area {
-                padding: 16px;
-            }
-
-            .modal {
-                margin: 12px;
-                max-height: calc(100vh - 24px);
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Qwen Dev Studio</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide-static/0.344.0/lucide.min.css">
+  <style>
+    :root {
+      --bg-color: #09090b;
+      --glass-bg: rgba(24, 24, 27, 0.6);
+      --glass-border: rgba(63, 63, 70, 0.4);
+      --glass-highlight: rgba(255, 255, 255, 0.05);
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
+      /* Subtle WebGL-style background gradient */
+      background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+    }
+
+    /* Glassmorphism Base */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 var(--glass-highlight);
+    }
+
+    /* Layout */
+    header {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+      border-bottom: 1px solid var(--glass-border);
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(12px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Chat & Code Split View */
+    .workspace {
+      flex: 1;
+      display: flex;
+      transition: all 0.5s var(--transition-smooth);
+    }
+
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--glass-border);
+      min-width: 0;
+    }
+
+    .code-panel {
+      width: 0;
+      opacity: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.5s var(--transition-spring);
+      background: #0d0d10;
+    }
+
+    .code-panel.active {
+      width: 50%;
+      opacity: 1;
+      border-left: 1px solid var(--glass-border);
+    }
+
+    @media (max-width: 768px) {
+      .workspace {
+        flex-direction: column;
+      }
+
+      .chat-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      .code-panel.active {
+        width: 100%;
+        height: 50%;
+        border-left: none;
+        border-top: 1px solid var(--glass-border);
+      }
+    }
+
+    /* Messages */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      gap: 16px;
+      max-width: 85%;
+      animation: slideUp 0.4s var(--transition-spring) forwards;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message.ai {
+      align-self: flex-start;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bubble {
+      padding: 16px 20px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    .message.user .bubble {
+      background: var(--accent);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.ai .bubble {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Input Area */
+    .input-area {
+      padding: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 16px 56px 16px 20px;
+      color: var(--text-main);
+      font-size: 15px;
+      resize: none;
+      outline: none;
+      max-height: 200px;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .action-btn {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s var(--transition-spring);
+    }
+
+    .action-btn:active {
+      transform: scale(0.9);
+    }
+
+    .file-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Model Selector Bar */
+    .model-bar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 12px;
+      border-bottom: 1px solid var(--glass-border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .model-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .model-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 99px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .model-chip.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .model-chip img {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+
+    /* Settings Panel */
+    .settings-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .settings-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .settings-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 400px;
+      max-width: 100%;
+      background: var(--bg-color);
+      border-left: 1px solid var(--glass-border);
+      transform: translateX(100%);
+      transition: transform 0.5s var(--transition-spring);
+      display: flex;
+      flex-direction: column;
+      z-index: 201;
+    }
+
+    .settings-panel.active {
+      transform: translateX(0);
+    }
+
+    .settings-header {
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .settings-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .setting-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s var(--transition-spring), box-shadow 0.2s;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--glass-border);
+      border-radius: 3px;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                </div>
-                <span class="logo-text">AI Code Studio</span>
-            </div>
-            <div class="header-actions">
-                <button class="icon-btn" id="menuBtn" title="Menu">
-                    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-                </button>
-                <button class="icon-btn" id="settingsBtn" title="Settings">
-                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                </button>
-            </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Sidebar -->
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-section">
-                    <div class="section-title">AI Model</div>
-                    <div class="model-selector">
-                        <div class="selected-model" id="selectedModel">
-                            <div class="model-icon" id="selectedModelIcon"></div>
-                            <div class="model-info">
-                                <div class="model-name" id="selectedModelName">Loading...</div>
-                                <div class="model-provider" id="selectedModelProvider"></div>
-                            </div>
-                            <svg class="dropdown-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-                        </div>
-                        <div class="model-dropdown" id="modelDropdown"></div>
-                    </div>
-                </div>
-
-                <div class="sidebar-section">
-                    <div class="section-title">Files</div>
-                    <div class="file-list" id="fileList">
-                        <!-- Files will be added here -->
-                    </div>
-                    <button class="add-file-btn" id="addFileBtn">
-                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                        Add File
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Chat Area -->
-            <section class="chat-area">
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message">
-                        <div class="message-avatar ai">
-                            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-header">
-                                <span class="message-sender">AI Assistant</span>
-                                <span class="message-time">Just now</span>
-                            </div>
-                            <div class="message-text">
-                                <p>Hello! I'm your AI coding assistant. I can help you write, debug, and explain code. Just describe what you need, and I'll generate the code for you!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-area">
-                    <div class="input-wrapper">
-                        <div class="input-container">
-                            <textarea 
-                                class="message-input" 
-                                id="messageInput" 
-                                placeholder="Describe what you want to code..."
-                                rows="1"
-                            ></textarea>
-                        </div>
-                        <button class="send-btn" id="sendBtn" title="Send">
-                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </main>
+  <header class="glass">
+    <div class="logo">
+      <div class="logo-icon"><i data-lucide="sparkles" style="width:18px;height:18px;color:white"></i></div>
+      <span>Qwen Studio</span>
     </div>
+    <div style="display:flex;gap:16px;">
+      <button id="toggle-code" class="file-btn" title="Toggle Code Workspace"><i data-lucide="code-2" style="width:20px;height:20px"></i></button>
+      <button id="open-settings" class="file-btn" title="Settings"><i data-lucide="settings" style="width:20px;height:20px"></i></button>
+    </div>
+  </header>
 
-    <!-- Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title">Settings</h2>
-                <button class="modal-close" id="closeSettings">
-                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-group">
-                    <label class="settings-label">Theme</label>
-                    <select class="settings-select" id="themeSelect">
-                        <option value="dark">Dark</option>
-                        <option value="light">Light</option>
-                        <option value="system">System</option>
-                    </select>
-                </div>
-
-                <div class="settings-group">
-                    <label class="settings-label">Code Font Size</label>
-                    <select class="settings-select" id="fontSizeSelect">
-                        <option value="12">12px</option>
-                        <option value="13" selected>13px</option>
-                        <option value="14">14px</option>
-                        <option value="15">15px</option>
-                        <option value="16">16px</option>
-                    </select>
-                </div>
-
-                <div class="settings-group">
-                    <label class="settings-label">Auto-save Files</label>
-                    <select class="settings-select" id="autoSaveSelect">
-                        <option value="true">Enabled</option>
-                        <option value="false">Disabled</option>
-                    </select>
-                </div>
-
-                <div class="add-model-form">
-                    <h3 style="font-size: 16px; margin-bottom: 8px;">Add New AI Model</h3>
-                    <div class="form-row">
-                        <div>
-                            <label class="settings-label">Model Name</label>
-                            <input type="text" class="settings-input" id="newModelName" placeholder="e.g., GPT-4 Turbo">
-                        </div>
-                        <div>
-                            <label class="settings-label">Provider</label>
-                            <input type="text" class="settings-input" id="newModelProvider" placeholder="e.g., openai">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="settings-label">Model Identifier</label>
-                        <input type="text" class="settings-input" id="newModelId" placeholder="e.g., gpt-4-turbo">
-                    </div>
-                    <div>
-                        <label class="settings-label">API Key</label>
-                        <input type="password" class="settings-input" id="newModelApiKey" placeholder="sk-...">
-                    </div>
-                    <div class="form-row">
-                        <div>
-                            <label class="settings-label">Icon</label>
-                            <select class="settings-select" id="newModelIcon">
-                                <option value="openai">OpenAI</option>
-                                <option value="claude">Claude</option>
-                                <option value="gemini">Gemini</option>
-                                <option value="llama">Llama</option>
-                                <option value="mistral">Mistral</option>
-                                <option value="cohere">Cohere</option>
-                                <option value="qwen">Qwen</option>
-                                <option value="deepseek">DeepSeek</option>
-                                <option value="grok">Grok</option>
-                                <option value="phi">Phi</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="settings-label">Color</label>
-                            <input type="color" class="settings-input" id="newModelColor" value="#615CED" style="height: 44px; padding: 4px;">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary btn-full" id="addModelBtn">
-                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                        Add Model
-                    </button>
-                </div>
-
-                <div class="models-list" id="modelsList">
-                    <h3 style="font-size: 16px; margin: 24px 0 16px 0;">Installed Models</h3>
-                    <!-- Models will be listed here -->
-                </div>
-            </div>
+  <main>
+    <div class="workspace">
+      <!-- Chat Interface -->
+      <div class="chat-panel">
+        <div class="model-bar" id="model-bar">
+          <!-- Models injected here -->
         </div>
+        <div class="messages-container" id="messages">
+          <!-- Messages injected here -->
+        </div>
+        <div class="input-area">
+          <input type="file" id="file-input" multiple style="display:none">
+          <button class="file-btn" onclick="document.getElementById('file-input').click()"><i data-lucide="paperclip" style="width:20px;height:20px"></i></button>
+          <div class="input-wrapper">
+            <textarea id="user-input" rows="1" placeholder="Message Qwen Studio..."></textarea>
+            <button class="action-btn" id="send-btn"><i data-lucide="arrow-up" style="width:18px;height:18px"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Interface -->
+      <div class="code-panel" id="code-panel">
+        <div
+          style="padding:12px 24px;border-bottom:1px solid var(--glass-border);display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.02)">
+          <span style="font-size:13px;font-weight:600;color:var(--text-muted)">WORKSPACE</span>
+          <select id="file-selector" style="background:transparent;border:none;color:var(--text-main);font-size:13px;outline:none"></select>
+        </div>
+        <div id="monaco-container" style="flex:1;overflow:hidden"></div>
+      </div>
     </div>
+  </main>
 
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <div class="toast-icon" id="toastIcon"></div>
-        <span class="toast-message" id="toastMessage"></span>
+  <!-- Settings Overlay -->
+  <div class="settings-overlay" id="settings-overlay">
+    <div class="settings-panel" id="settings-panel">
+      <div class="settings-header">
+        <h2 style="margin:0;font-size:18px;font-weight:600">Settings</h2>
+        <button class="file-btn" id="close-settings" style="width:32px;height:32px"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+      </div>
+      <div class="settings-content">
+
+        <div class="setting-group">
+          <div class="setting-title">Data Management</div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0">Load models from your external
+            <code>models.json</code> file.</p>
+          <input type="file" id="json-upload" accept=".json" style="display:none">
+          <button class="btn-secondary" onclick="document.getElementById('json-upload').click()">Sync from File</button>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-title">Add New Model Manually</div>
+          <select id="add-provider" class="input-field"></select>
+          <input type="text" id="add-name" class="input-field" placeholder="Model Display Name (e.g. GPT-4o)">
+          <input type="text" id="add-model-id" class="input-field" placeholder="Exact Model ID (e.g. gpt-4o-2024-05-13)">
+          <input type="text" id="add-endpoint" class="input-field" placeholder="API Endpoint URL">
+          <input type="password" id="add-key" class="input-field" placeholder="API Key">
+          <button class="btn-primary" id="add-model-btn">Add Model</button>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-title">Appearance</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+            <span style="font-size:14px">High Contrast Mode</span>
+            <input type="checkbox">
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+            <span style="font-size:14px">Reduce Motion</span>
+            <input type="checkbox">
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-title">System Prompt</div>
+          <textarea class="input-field" rows="4" placeholder="You are a helpful coding assistant..."></textarea>
+        </div>
+
+      </div>
     </div>
+  </div>
 
-    <script>
-        // SVG Icons for different AI providers
-        const providerIcons = {
-            openai: `<svg viewBox="0 0 24 24"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9771 4.1823a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729z"/></svg>`,
-            claude: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>`,
-            gemini: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`,
-            llama: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1s-1-.45-1-1v-4c0-.55.45-1 1-1zm4 0c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1s-1-.45-1-1v-4c0-.55.45-1 1-1z"/></svg>`,
-            mistral: `<svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 13H6l6-13z"/></svg>`,
-            cohere: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12" stroke="white" stroke-width="2"/></svg>`,
-            qwen: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm-1-9h2v4h-2zm0 6h2v2h-2z"/></svg>`,
-            deepseek: `<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`,
-            grok: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`,
-            phi: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>`,
-            yi: `<svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>`,
-            dolphin: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>`,
-            wizard: `<svg viewBox="0 0 24 24"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.86L12 5.84zM12 22c-3.31 0-6-2.69-6-6 0-2.22 1.21-4.15 3-5.19V16h6v-5.19c1.79 1.04 3 2.97 3 5.19 0 3.31-2.69 6-6 6z"/></svg>`,
-            default: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>`
+  <!-- Dependencies -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+  <script>
+    // State Management
+        let state = {
+            providers: [],
+            models: [],
+            activeModelId: null,
+            files: { 'main.js': '// Start coding here\n' },
+            activeFile: 'main.js',
+            messages: []
         };
 
-        const providerColors = {
-            openai: '#10A37F',
-            claude: '#D97757',
-            gemini: '#4285F4',
-            llama: '#0668E1',
-            mistral: '#FF7000',
-            cohere: '#3F51B5',
-            qwen: '#615CED',
-            deepseek: '#0066FF',
-            grok: '#FFFFFF',
-            phi: '#00BCF2',
-            yi: '#1E88E5',
-            dolphin: '#00ACC1',
-            wizard: '#7B1FA2',
-            default: '#615CED'
-        };
-
-        // State
-        let models = [];
-        let selectedModelIndex = 0;
-        let files = [{ name: 'main.js', content: '' }];
-        let activeFileIndex = 0;
-        let messages = [];
-
-        // DOM Elements
-        const selectedModelEl = document.getElementById('selectedModel');
-        const selectedModelIconEl = document.getElementById('selectedModelIcon');
-        const selectedModelNameEl = document.getElementById('selectedModelName');
-        const selectedModelProviderEl = document.getElementById('selectedModelProvider');
-        const modelDropdownEl = document.getElementById('modelDropdown');
-        const chatMessagesEl = document.getElementById('chatMessages');
-        const messageInputEl = document.getElementById('messageInput');
-        const sendBtnEl = document.getElementById('sendBtn');
-        const fileListEl = document.getElementById('fileList');
-        const addFileBtnEl = document.getElementById('addFileBtn');
-        const settingsBtnEl = document.getElementById('settingsBtn');
-        const settingsModalEl = document.getElementById('settingsModal');
-        const closeSettingsEl = document.getElementById('closeSettings');
-        const menuBtnEl = document.getElementById('menuBtn');
-        const sidebarEl = document.getElementById('sidebar');
-        const toastEl = document.getElementById('toast');
-        const toastIconEl = document.getElementById('toastIcon');
-        const toastMessageEl = document.getElementById('toastMessage');
-        const addModelBtnEl = document.getElementById('addModelBtn');
-        const modelsListEl = document.getElementById('modelsList');
-
-        // Load models from JSON
-        async function loadModels() {
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            initMonaco();
+            setupEventListeners();
+            
+            // Attempt to load local models.json automatically
             try {
-                const response = await fetch('models.json');
-                if (!response.ok) throw new Error('Failed to load models');
-                const data = await response.json();
-                models = data.models || [];
-                
-                if (models.length > 0) {
-                    updateSelectedModelDisplay();
-                    renderModelDropdown();
-                    renderModelsList();
-                }
-            } catch (error) {
-                console.error('Error loading models:', error);
-                showToast('Failed to load models', 'error');
-            }
-        }
-
-        // Update selected model display
-        function updateSelectedModelDisplay() {
-            if (models.length === 0) return;
-            
-            const model = models[selectedModelIndex];
-            const iconSvg = providerIcons[model.icon] || providerIcons.default;
-            const color = model.color || providerColors[model.icon] || providerColors.default;
-            
-            selectedModelIconEl.innerHTML = iconSvg;
-            selectedModelIconEl.style.background = color;
-            selectedModelNameEl.textContent = model.name;
-            selectedModelProviderEl.textContent = model.provider;
-        }
-
-        // Render model dropdown
-        function renderModelDropdown() {
-            modelDropdownEl.innerHTML = models.map((model, index) => {
-                const iconSvg = providerIcons[model.icon] || providerIcons.default;
-                const color = model.color || providerColors[model.icon] || providerColors.default;
-                const isSelected = index === selectedModelIndex ? 'selected' : '';
-                
-                return `
-                    <div class="model-option ${isSelected}" data-index="${index}">
-                        <div class="model-icon" style="background: ${color}">
-                            ${iconSvg}
-                        </div>
-                        <div class="model-info">
-                            <div class="model-name">${model.name}</div>
-                            <div class="model-provider">${model.provider}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Add click handlers
-            modelDropdownEl.querySelectorAll('.model-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    selectedModelIndex = parseInt(option.dataset.index);
-                    updateSelectedModelDisplay();
-                    renderModelDropdown();
-                    modelDropdownEl.classList.remove('open');
-                });
-            });
-        }
-
-        // Render models list in settings
-        function renderModelsList() {
-            modelsListEl.innerHTML = `
-                <h3 style="font-size: 16px; margin: 24px 0 16px 0;">Installed Models (${models.length})</h3>
-                ${models.map((model, index) => {
-                    const iconSvg = providerIcons[model.icon] || providerIcons.default;
-                    const color = model.color || providerColors[model.icon] || providerColors.default;
-                    
-                    return `
-                        <div class="model-card">
-                            <div class="model-icon" style="background: ${color}; width: 40px; height: 40px;">
-                                ${iconSvg}
-                            </div>
-                            <div class="model-card-info">
-                                <div class="model-card-name">${model.name}</div>
-                                <div class="model-card-details">${model.provider} • ${model.model}</div>
-                            </div>
-                            <div class="model-card-actions">
-                                ${index !== 0 ? `
-                                    <button class="action-icon-btn delete" onclick="deleteModel(${index})">
-                                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                                    </button>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            `;
-        }
-
-        // Delete model
-        window.deleteModel = async function(index) {
-            if (index === 0) {
-                showToast('Cannot delete the default model', 'error');
-                return;
-            }
-            
-            models.splice(index, 1);
-            if (selectedModelIndex >= models.length) {
-                selectedModelIndex = models.length - 1;
-            }
-            
-            await saveModels();
-            updateSelectedModelDisplay();
-            renderModelDropdown();
-            renderModelsList();
-            showToast('Model deleted successfully', 'success');
-        };
-
-        // Save models to JSON
-        async function saveModels() {
-            try {
-                const response = await fetch('models.json', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ models })
-                });
-                
-                if (!response.ok) throw new Error('Failed to save models');
-            } catch (error) {
-                console.error('Error saving models:', error);
-                // For local testing, we'll just log it
-                console.log('Models would be saved to models.json');
-            }
-        }
-
-        // Render file list
-        function renderFileList() {
-            fileListEl.innerHTML = files.map((file, index) => `
-                <div class="file-item ${index === activeFileIndex ? 'active' : ''}" data-index="${index}">
-                    <div class="file-icon">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                    </div>
-                    <span class="file-name">${file.name}</span>
-                </div>
-            `).join('');
-
-            // Add click handlers
-            fileListEl.querySelectorAll('.file-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    activeFileIndex = parseInt(item.dataset.index);
-                    renderFileList();
-                });
-            });
-        }
-
-        // Add message to chat
-        function addMessage(content, isUser = false, codeBlock = null) {
-            const messageEl = document.createElement('div');
-            messageEl.className = 'message';
-            
-            const avatarClass = isUser ? 'user' : 'ai';
-            const avatarSvg = isUser 
-                ? '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'
-                : providerIcons[models[selectedModelIndex]?.icon] || providerIcons.default;
-            
-            const senderName = isUser ? 'You' : models[selectedModelIndex]?.name || 'AI';
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            let codeHtml = '';
-            if (codeBlock) {
-                codeHtml = `
-                    <div class="code-block">
-                        <div class="code-header">
-                            <span class="code-language">${codeBlock.language || 'Code'}</span>
-                            <div class="code-actions">
-                                <button class="code-action-btn" onclick="copyCode(this)">
-                                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                                    Copy
-                                </button>
-                            </div>
-                        </div>
-                        <div class="code-content">
-                            <pre><code>${escapeHtml(codeBlock.code)}</code></pre>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            messageEl.innerHTML = `
-                <div class="message-avatar ${avatarClass}">
-                    ${avatarSvg}
-                </div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="message-sender">${senderName}</span>
-                        <span class="message-time">${time}</span>
-                    </div>
-                    <div class="message-text">
-                        ${content}
-                        ${codeHtml}
-                    </div>
-                </div>
-            `;
-            
-            chatMessagesEl.appendChild(messageEl);
-            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-        }
-
-        // Escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Copy code
-        window.copyCode = function(btn) {
-            const code = btn.closest('.code-block').querySelector('code').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                showToast('Code copied!', 'success');
-            });
-        };
-
-        // Show typing indicator
-        function showTypingIndicator() {
-            const indicatorEl = document.createElement('div');
-            indicatorEl.className = 'message';
-            indicatorEl.id = 'typingIndicator';
-            indicatorEl.innerHTML = `
-                <div class="message-avatar ai">
-                    ${providerIcons[models[selectedModelIndex]?.icon] || providerIcons.default}
-                </div>
-                <div class="message-content">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
-            chatMessagesEl.appendChild(indicatorEl);
-            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-        }
-
-        // Remove typing indicator
-        function removeTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            if (indicator) indicator.remove();
-        }
-
-        // Send message
-        async function sendMessage() {
-            const content = messageInputEl.value.trim();
-            if (!content) return;
-            
-            // Add user message
-            addMessage(`<p>${escapeHtml(content)}</p>`, true);
-            messageInputEl.value = '';
-            messageInputEl.style.height = 'auto';
-            
-            // Show typing indicator
-            showTypingIndicator();
-            sendBtnEl.disabled = true;
-            
-            // Simulate AI response (in real implementation, call API)
-            setTimeout(() => {
-                removeTypingIndicator();
-                
-                // Check if user asked for code
-                const codeKeywords = ['code', 'function', 'write', 'create', 'make', 'build'];
-                const hasCodeKeyword = codeKeywords.some(keyword => 
-                    content.toLowerCase().includes(keyword)
-                );
-                
-                if (hasCodeKeyword) {
-                    // Simulate code generation
-                    const sampleCode = `// Generated code based on: ${content}
-function exampleFunction() {
-    console.log("Hello from AI!");
-    return "Code generated successfully";
-}
-
-exampleFunction();`;
-                    
-                    addMessage(`<p>I've generated some code for you based on your request:</p>`, false, {
-                        language: 'JavaScript',
-                        code: sampleCode
-                    });
+                const response = await fetch('./models.json');
+                if(response.ok) {
+                    const data = await response.json();
+                    loadData(data);
                 } else {
-                    addMessage(`<p>I understand you're asking about "${escapeHtml(content)}". How can I help you with coding today?</p>`, false);
+                    loadFallback();
                 }
-                
-                sendBtnEl.disabled = false;
-            }, 1500);
+            } catch (e) {
+                console.warn("Could not fetch models.json automatically. Use Sync from File in settings.");
+                loadFallback();
+            }
+        });
+
+        function loadFallback() {
+            // Minimal fallback if file isn't served via HTTP properly
+            loadData({
+                providers: [{id:"anyai",name:"AnyAI",icon:"https://api.dicebear.com/7.x/shapes/svg?seed=anyai"}],
+                models: [{id:"deepseek-v4-flash",name:"DeepSeek V4 Flash",providerId:"anyai",apiEndpoint:"https://api.anyai.ai/v1/chat/completions",apiKey:"sk-GwXuS2_d1UIVFE8Qz6AK_w",modelName:"deepseek/deepseek-v4-flash"}]
+            });
         }
 
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            toastIconEl.className = `toast-icon ${type}`;
-            toastIconEl.innerHTML = type === 'success' 
-                ? '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
-                : '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
-            
-            toastMessageEl.textContent = message;
-            toastEl.classList.add('show');
-            
-            setTimeout(() => {
-                toastEl.classList.remove('show');
-            }, 3000);
+        function loadData(data) {
+            state.providers = data.providers;
+            state.models = data.models;
+            state.activeModelId = state.models[0]?.id || null;
+            renderModels();
+            renderProviderSelect();
+        }
+
+        // UI Rendering
+        function renderModels() {
+            const bar = document.getElementById('model-bar');
+            bar.innerHTML = '';
+            state.models.forEach(model => {
+                const provider = state.providers.find(p => p.id === model.providerId);
+                const chip = document.createElement('div');
+                chip.className = `model-chip ${model.id === state.activeModelId ? 'active' : ''}`;
+                chip.onclick = () => { state.activeModelId = model.id; renderModels(); };
+                chip.innerHTML = `
+                    <img src="${provider?.icon || ''}" alt="${provider?.name}">
+                    <span>${model.name}</span>
+                `;
+                bar.appendChild(chip);
+            });
+        }
+
+        function renderProviderSelect() {
+            const select = document.getElementById('add-provider');
+            select.innerHTML = state.providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
         }
 
         // Event Listeners
-        selectedModelEl.addEventListener('click', () => {
-            modelDropdownEl.classList.toggle('open');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!selectedModelEl.contains(e.target)) {
-                modelDropdownEl.classList.remove('open');
-            }
-        });
-
-        sendBtnEl.addEventListener('click', sendMessage);
-
-        messageInputEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        // Auto-resize textarea
-        messageInputEl.addEventListener('input', () => {
-            messageInputEl.style.height = 'auto';
-            messageInputEl.style.height = Math.min(messageInputEl.scrollHeight, 200) + 'px';
-        });
-
-        addFileBtnEl.addEventListener('click', () => {
-            const fileName = prompt('Enter file name:');
-            if (fileName) {
-                files.push({ name: fileName, content: '' });
-                renderFileList();
-                showToast('File added successfully', 'success');
-            }
-        });
-
-        settingsBtnEl.addEventListener('click', () => {
-            settingsModalEl.classList.add('active');
-        });
-
-        closeSettingsEl.addEventListener('click', () => {
-            settingsModalEl.classList.remove('active');
-        });
-
-        settingsModalEl.addEventListener('click', (e) => {
-            if (e.target === settingsModalEl) {
-                settingsModalEl.classList.remove('active');
-            }
-        });
-
-        menuBtnEl.addEventListener('click', () => {
-            sidebarEl.classList.toggle('open');
-        });
-
-        // Add model button
-        addModelBtnEl.addEventListener('click', async () => {
-            const name = document.getElementById('newModelName').value.trim();
-            const provider = document.getElementById('newModelProvider').value.trim();
-            const modelId = document.getElementById('newModelId').value.trim();
-            const apiKey = document.getElementById('newModelApiKey').value.trim();
-            const icon = document.getElementById('newModelIcon').value;
-            const color = document.getElementById('newModelColor').value;
-            
-            if (!name || !provider || !modelId || !apiKey) {
-                showToast('Please fill in all required fields', 'error');
-                return;
-            }
-            
-            const newModel = {
-                id: modelId,
-                name,
-                provider,
-                model: modelId,
-                apiKey,
-                icon,
-                color
+        function setupEventListeners() {
+            // Settings Toggle
+            document.getElementById('open-settings').onclick = () => {
+                document.getElementById('settings-overlay').classList.add('active');
+                document.getElementById('settings-panel').classList.add('active');
             };
-            
-            models.push(newModel);
-            await saveModels();
-            renderModelDropdown();
-            renderModelsList();
-            
-            // Clear form
-            document.getElementById('newModelName').value = '';
-            document.getElementById('newModelProvider').value = '';
-            document.getElementById('newModelId').value = '';
-            document.getElementById('newModelApiKey').value = '';
-            
-            showToast('Model added successfully', 'success');
-        });
+            document.getElementById('close-settings').onclick = () => {
+                document.getElementById('settings-overlay').classList.remove('active');
+                document.getElementById('settings-panel').classList.remove('active');
+            };
 
-        // Initialize
-        loadModels();
-        renderFileList();
-    </script>
+            // Code Panel Toggle
+            document.getElementById('toggle-code').onclick = () => {
+                document.getElementById('code-panel').classList.toggle('active');
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 500); // Resize monaco
+            };
+
+            // Auto-resize textarea
+            const input = document.getElementById('user-input');
+            input.addEventListener('input', () => {
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+            });
+
+            // Send Message
+            document.getElementById('send-btn').onclick = sendMessage;
+            input.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            });
+
+            // Add Model Button
+            document.getElementById('add-model-btn').onclick = () => {
+                const newModel = {
+                    id: crypto.randomUUID(),
+                    name: document.getElementById('add-name').value,
+                    providerId: document.getElementById('add-provider').value,
+                    modelName: document.getElementById('add-model-id').value,
+                    apiEndpoint: document.getElementById('add-endpoint').value,
+                    apiKey: document.getElementById('add-key').value
+                };
+                if(!newModel.name || !newModel.modelName) return alert("Fill required fields");
+                state.models.push(newModel);
+                state.activeModelId = newModel.id;
+                renderModels();
+                // Clear inputs
+                ['add-name','add-model-id','add-endpoint','add-key'].forEach(id => document.getElementById(id).value = '');
+            };
+
+            // File Upload for Sync
+            document.getElementById('json-upload').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        loadData(data);
+                        alert("Models synced successfully!");
+                    } catch(err) { alert("Invalid JSON file"); }
+                };
+                reader.readAsText(file);
+            });
+
+            // File Attachment Simulation
+            document.getElementById('file-input').addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                files.forEach(f => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        state.files[f.name] = ev.target.result;
+                        updateFileSelector();
+                        document.getElementById('code-panel').classList.add('active');
+                    };
+                    reader.readAsText(f);
+                });
+            });
+
+            document.getElementById('file-selector').onchange = (e) => {
+                state.activeFile = e.target.value;
+                window.editor.setValue(state.files[state.activeFile]);
+            };
+        }
+
+        function updateFileSelector() {
+            const sel = document.getElementById('file-selector');
+            sel.innerHTML = Object.keys(state.files).map(f => `<option value="${f}">${f}</option>`).join('');
+        }
+
+        // AI Integration
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            appendMessage('user', text);
+            input.value = '';
+            input.style.height = 'auto';
+
+            const model = state.models.find(m => m.id === state.activeModelId);
+            if(!model) return appendMessage('ai', 'No model selected.');
+
+            // Show typing indicator
+            const typingId = appendMessage('ai', 'Thinking...');
+
+            try {
+                const response = await fetch(model.apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${model.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model.modelName,
+                        messages: [{ role: 'user', content: text }]
+                    })
+                });
+
+                const data = await response.json();
+                const reply = data.choices?.[0]?.message?.content || 'No response generated.';
+                
+                // Update message
+                document.getElementById(typingId).querySelector('.bubble').innerText = reply;
+
+                // Extract code blocks if any
+                const codeRegex = /```(?:javascript|js|html|css)?\n([\s\S]*?)\n```/g;
+                let match;
+                while ((match = codeRegex.exec(reply)) !== null) {
+                    const fileName = `generated_${Date.now().toString(36)}.js`;
+                    state.files[fileName] = match[1];
+                    updateFileSelector();
+                    document.getElementById('code-panel').classList.add('active');
+                    document.getElementById('file-selector').value = fileName;
+                    window.editor.setValue(match[1]);
+                }
+
+            } catch (err) {
+                document.getElementById(typingId).querySelector('.bubble').innerText = `Error: ${err.message}`;
+            }
+        }
+
+        function appendMessage(role, text) {
+            const container = document.getElementById('messages');
+            const id = `msg-${Date.now()}`;
+            const provider = state.providers.find(p => p.id === state.models.find(m=>m.id===state.activeModelId)?.providerId);
+            
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.id = id;
+            div.innerHTML = `
+                <div class="avatar">
+                    ${role === 'user' ? '<i data-lucide="user" style="width:18px;height:18px"></i>' : `<img src="${provider?.icon || ''}">`}
+                </div>
+                <div class="bubble">${text}</div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+            return id;
+        }
+
+        // Monaco Editor Setup
+        function initMonaco() {
+            require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                // Define custom dark theme matching our glass UI
+                monaco.editor.defineTheme('qwen-dark', {
+                    base: 'vs-dark',
+                    inherit: true,
+                    rules: [],
+                    colors: {
+                        'editor.background': '#00000000', // Transparent for glass effect
+                        'editor.foreground': '#fafafa',
+                        'editor.lineHighlightBackground': '#ffffff05',
+                        'editorCursor.foreground': '#6366f1',
+                        'editor.selectionBackground': '#6366f133'
+                    }
+                });
+
+                window.editor = monaco.editor.create(document.getElementById('monaco-container'), {
+                    value: state.files[state.activeFile],
+                    language: 'javascript',
+                    theme: 'qwen-dark',
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: 14,
+                    minimap: { enabled: false },
+                    padding: { top: 16 },
+                    automaticLayout: true,
+                    scrollBeyondLastLine: false
+                });
+
+                window.editor.onDidChangeModelContent(() => {
+                    state.files[state.activeFile] = window.editor.getValue();
+                });
+            });
+        }
+  </script>
 </body>
+
 </html>
