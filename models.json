@@ -1,4 +1,4 @@
-models_data = {
+
     "models": [
         {
             "id": "deepseek-v4-flash",
@@ -201,10 +201,3 @@ models_data = {
     ]
 }
 
-import json
-with open('models.json', 'w') as f:
-    json.dump(models_data, f, indent=2)
-
-print("models.json created successfully!")
- # Result 
-models.json created successfully!
