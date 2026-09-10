@@ -598,6 +598,61 @@ const Pearl = {
   },
 };
 
+/* ---------- shapes/cube.js ---------- */
+const Cube = {
+  id: 'cube',
+  name: 'Cube',
+  icon: '⬛',
+  defaultSize: { x: 0.9, y: 0.9, z: 0.9 },
+  mass: 1.1,
+  createMesh(size, color) {
+    const geo = new THREE.BoxGeometry(size.x, size.y, size.z);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.1 });
+    body.addShape(new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)));
+    return body;
+  },
+};
+
+/* ---------- shapes/pyramid.js ---------- */
+const Pyramid = {
+  id: 'pyramid',
+  name: 'Pyramid',
+  icon: '▲',
+  defaultSize: { radius: 0.55, height: 1.0 },
+  mass: 1.0,
+  createMesh(size, color) {
+    const geo = new THREE.ConeGeometry(size.radius, size.height, 4);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    const r = size.radius * 0.5;
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
+    body.addShape(new CANNON.Sphere(r));
+    return body;
+  },
+};
+
+/* ---------- shapes/prism.js ---------- */
+const Prism = {
+  id: 'prism',
+  name: 'Prism',
+  icon: '📐',
+  defaultSize: { radius: 0.5, height: 1.0 },
+  mass: 1.1,
+  createMesh(size, color) {
+    const geo = new THREE.CylinderGeometry(size.radius, size.radius, size.height, 3);
+    return new THREE.Mesh(geo, makeMat(color));
+  },
+  createBody(size, mass) {
+    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.12 });
+    body.addShape(new CANNON.Cylinder(size.radius, size.radius, size.height, 3));
+    return body;
+  },
+};
+
 // The registry — add new shapes here
 const SHAPES = {
   roundedBox: RoundedBox,
@@ -608,6 +663,8 @@ const SHAPES = {
   cone:       Cone,
   pearl:      Pearl,
   cube:       Cube,
+  pyramid:    Pyramid,
+  prism:      Prism,
 };
 const SHAPE_LIST = Object.values(SHAPES);
 
