@@ -1,1284 +1,1759 @@
-<!DOCTYPE html>
+html_content = '''<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Pastel Toss · Cozy Physics</title>
-  <style>
-    :root {
-      --pink: #FFB5C2;
-      --lavender: #C8B6FF;
-      --mint: #B8E6C8;
-      --peach: #FFD4A3;
-      --sky: #B5D8FF;
-      --cream: #FFF5E1;
-      --lilac: #E0BBE4;
-      --ink: #5B4B6B;
-      --glass: rgba(255, 255, 255, 0.55);
-      --glass-strong: rgba(255, 255, 255, 0.75);
-      --shadow-soft: 0 10px 40px rgba(140, 110, 170, 0.18);
-      --shadow-glow: 0 0 30px rgba(200, 182, 255, 0.35);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AI Code Studio</title>
+    <style>
+        :root {
+            --primary: #615CED;
+            --primary-light: #7B76F5;
+            --primary-dark: #4A45C9;
+            --bg-dark: #0D0D12;
+            --bg-card: rgba(20, 20, 30, 0.6);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0B0;
+            --text-muted: #606070;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --code-bg: #1E1E2E;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+        }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
-      color: var(--ink);
-      background: linear-gradient(160deg, #FFE5EC 0%, #E0BBE4 40%, #B5D8FF 100%);
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
 
-    #app {
-      position: fixed;
-      inset: 0;
-    }
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-    canvas {
-      display: block;
-      touch-action: none;
-    }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 24px;
+        }
 
-    /* Safe area padding */
-    .safe-top {
-      padding-top: env(safe-area-inset-top);
-    }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    .safe-bottom {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+        }
 
-    .safe-left {
-      padding-left: env(safe-area-inset-left);
-    }
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
 
-    .safe-right {
-      padding-right: env(safe-area-inset-right);
-    }
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
 
-    /* Liquid glass UI */
-    .ui-layer {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-    }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
 
-    .ui-layer>* {
-      pointer-events: auto;
-    }
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
 
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(20px) saturate(1.4);
-      -webkit-backdrop-filter: blur(20px) saturate(1.4);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-      border-radius: 28px;
-    }
+        .icon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-    /* Top bar */
-    .top-bar {
-      position: absolute;
-      top: calc(16px + env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      padding: 10px 18px;
-      animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+        .icon-btn:hover::before {
+            opacity: 1;
+        }
 
-    .score-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.5);
-      font-weight: 600;
-      font-size: 15px;
-      letter-spacing: 0.3px;
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
 
-    .score-pill.bump {
-      transform: scale(1.12);
-    }
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+            transition: fill 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
 
-    .score-pill .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--pink), var(--lavender));
-      box-shadow: 0 0 10px var(--lavender);
-    }
+        .icon-btn:hover svg {
+            fill: var(--text-primary);
+        }
 
-    /* Shape selector */
-    .shape-tray {
-      position: absolute;
-      left: calc(16px + env(safe-area-inset-left));
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 14px;
-      animation: slideRight 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+        .icon-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
 
-    .shape-btn {
-      width: 56px;
-      height: 56px;
-      border-radius: 20px;
-      border: none;
-      background: rgba(255, 255, 255, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-      color: var(--ink);
-    }
+        .icon-btn.active svg {
+            fill: white;
+        }
 
-    .shape-btn:hover {
-      transform: scale(1.08) rotate(-3deg);
-    }
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            min-height: 0;
+        }
 
-    .shape-btn:active {
-      transform: scale(0.92);
-    }
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
 
-    .shape-btn.active {
-      background: linear-gradient(135deg, var(--cream), var(--pink));
-      box-shadow: 0 6px 20px rgba(255, 181, 194, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      transform: scale(1.05);
-    }
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: var(--shadow-md);
+            overflow-y: auto;
+            max-height: calc(100vh - 140px);
+        }
 
-    .shape-btn .label {
-      position: absolute;
-      left: 68px;
-      background: var(--glass-strong);
-      backdrop-filter: blur(10px);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
-      opacity: 0;
-      transform: translateX(-8px);
-      transition: all 0.3s;
-      pointer-events: none;
-    }
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-    .shape-btn:hover .label {
-      opacity: 1;
-      transform: translateX(0);
-    }
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 0 4px;
+        }
 
-    /* Bottom controls */
-    .bottom-bar {
-      position: absolute;
-      bottom: calc(20px + env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 12px;
-      padding: 12px;
-      animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
+        /* Model Selection */
+        .model-selector {
+            position: relative;
+        }
 
-    .action-btn {
-      padding: 12px 22px;
-      border-radius: 22px;
-      border: none;
-      background: linear-gradient(135deg, #fff, #F5E8F5);
-      color: var(--ink);
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 4px 16px rgba(140, 110, 170, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .selected-model {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    .action-btn:hover {
-      transform: translateY(-2px) scale(1.03);
-    }
+        .selected-model:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
 
-    .action-btn:active {
-      transform: translateY(1px) scale(0.97);
-    }
+        .model-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
-    .action-btn.primary {
-      background: linear-gradient(135deg, var(--pink), var(--lavender));
-      color: white;
-      box-shadow: 0 6px 24px rgba(200, 182, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    }
+        .model-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
 
-    /* Power meter */
-    .power-meter {
-      position: absolute;
-      right: calc(20px + env(safe-area-inset-right));
-      top: 50%;
-      transform: translateY(-50%);
-      width: 14px;
-      height: 200px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.4);
-      overflow: hidden;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+        .model-info {
+            flex: 1;
+            min-width: 0;
+        }
 
-    .power-meter.visible {
-      opacity: 1;
-    }
+        .model-name {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .power-fill {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 0%;
-      background: linear-gradient(to top, var(--mint), var(--peach), var(--pink));
-      border-radius: 10px;
-      transition: height 0.08s linear;
-      box-shadow: 0 0 20px rgba(255, 181, 194, 0.6);
-    }
+        .model-provider {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
 
-    /* Hint */
-    .hint {
-      position: absolute;
-      bottom: calc(100px + env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 18px;
-      border-radius: 18px;
-      background: var(--glass-strong);
-      backdrop-filter: blur(12px);
-      font-size: 13px;
-      font-weight: 500;
-      opacity: 0.9;
-      animation: pulse 3s ease-in-out infinite;
-      pointer-events: none;
-    }
+        .dropdown-arrow {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
 
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translate(-50%, -30px);
-      }
+        .model-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-      to {
-        opacity: 1;
-        transform: translate(-50%, 0);
-      }
-    }
+        .model-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
 
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translate(-50%, 30px);
-      }
+        .model-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
 
-      to {
-        opacity: 1;
-        transform: translate(-50%, 0);
-      }
-    }
+        .model-option:first-child {
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
 
-    @keyframes slideRight {
-      from {
-        opacity: 0;
-        transform: translate(-60%, -50%);
-      }
+        .model-option:last-child {
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+        }
 
-      to {
-        opacity: 1;
-        transform: translate(0, -50%);
-      }
-    }
+        .model-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
 
-    @keyframes pulse {
+        .model-option.selected {
+            background: rgba(97, 92, 237, 0.2);
+        }
 
-      0%,
-      100% {
-        opacity: 0.75;
-        transform: translateX(-50%) scale(1);
-      }
+        /* Files Section */
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-      50% {
-        opacity: 0.95;
-        transform: translateX(-50%) scale(1.03);
-      }
-    }
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-    @media (max-width: 600px) {
-      .shape-tray {
-        flex-direction: row;
-        top: auto;
-        bottom: calc(100px + env(safe-area-inset-bottom));
-        left: 50%;
-        transform: translateX(-50%);
-      }
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
 
-      .shape-btn .label {
-        display: none;
-      }
+        .file-item.active {
+            background: rgba(97, 92, 237, 0.2);
+            border-color: var(--primary);
+        }
 
-      .power-meter {
-        right: calc(12px + env(safe-area-inset-right));
-        height: 160px;
-      }
-    }
-  </style>
+        .file-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-secondary);
+        }
+
+        .file-name {
+            font-size: 13px;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .add-file-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-glass);
+            border: 1px dashed var(--border-glass);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-file-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .add-file-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            display: flex;
+            gap: 16px;
+            animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message-avatar.ai {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+
+        .message-avatar svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .message-sender {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .message-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .message-text p {
+            margin-bottom: 12px;
+        }
+
+        .message-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-top: 12px;
+            animation: codeBlockExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes codeBlockExpand {
+            from {
+                opacity: 0;
+                transform: scaleY(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scaleY(1);
+            }
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .code-language {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .code-action-btn {
+            padding: 6px 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .code-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .code-action-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .code-content {
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #E0E0E0;
+        }
+
+        .code-content code {
+            font-family: inherit;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 16px 20px;
+            padding-right: 60px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: 15px;
+            line-height: 1.5;
+            resize: none;
+            min-height: 56px;
+            max-height: 200px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border: none;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* Settings Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .settings-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-model-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .models-list {
+            margin-top: 20px;
+        }
+
+        .model-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .model-card:hover {
+            border-color: var(--primary);
+        }
+
+        .model-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .model-card-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .model-card-details {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .model-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-icon-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .action-icon-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+        }
+
+        .action-icon-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-secondary);
+        }
+
+        .action-icon-btn.delete:hover svg {
+            fill: var(--error);
+        }
+
+        /* Loading State */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-icon.success {
+            background: var(--success);
+        }
+
+        .toast-icon.error {
+            background: var(--error);
+        }
+
+        .toast-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 12px;
+            }
+
+            .header {
+                margin-bottom: 16px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+
+            .main-content {
+                gap: 16px;
+            }
+
+            .sidebar {
+                max-height: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 500;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .chat-messages {
+                padding: 16px;
+            }
+
+            .input-area {
+                padding: 16px;
+            }
+
+            .modal {
+                margin: 12px;
+                max-height: calc(100vh - 24px);
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <div id="app"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <span class="logo-text">AI Code Studio</span>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="menuBtn" title="Menu">
+                    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+                <button class="icon-btn" id="settingsBtn" title="Settings">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                </button>
+            </div>
+        </header>
 
-  <div class="ui-layer">
-    <div class="top-bar glass safe-top">
-      <div class="score-pill" id="scorePill">
-        <span class="dot"></span>
-        <span>Score</span>
-        <span id="scoreValue">0</span>
-      </div>
-      <div class="score-pill" id="shotsPill">
-        <span class="dot" style="background:linear-gradient(135deg,var(--mint),var(--sky));box-shadow:0 0 10px var(--mint)"></span>
-        <span>Shots</span>
-        <span id="shotsValue">0</span>
-      </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <div class="section-title">AI Model</div>
+                    <div class="model-selector">
+                        <div class="selected-model" id="selectedModel">
+                            <div class="model-icon" id="selectedModelIcon"></div>
+                            <div class="model-info">
+                                <div class="model-name" id="selectedModelName">Loading...</div>
+                                <div class="model-provider" id="selectedModelProvider"></div>
+                            </div>
+                            <svg class="dropdown-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </div>
+                        <div class="model-dropdown" id="modelDropdown"></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="section-title">Files</div>
+                    <div class="file-list" id="fileList">
+                        <!-- Files will be added here -->
+                    </div>
+                    <button class="add-file-btn" id="addFileBtn">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        Add File
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <section class="chat-area">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message">
+                        <div class="message-avatar ai">
+                            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-sender">AI Assistant</span>
+                                <span class="message-time">Just now</span>
+                            </div>
+                            <div class="message-text">
+                                <p>Hello! I'm your AI coding assistant. I can help you write, debug, and explain code. Just describe what you need, and I'll generate the code for you!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <div class="input-container">
+                            <textarea 
+                                class="message-input" 
+                                id="messageInput" 
+                                placeholder="Describe what you want to code..."
+                                rows="1"
+                            ></textarea>
+                        </div>
+                        <button class="send-btn" id="sendBtn" title="Send">
+                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <div class="shape-tray glass safe-left" id="shapeTray"></div>
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="modal-close" id="closeSettings">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <label class="settings-label">Theme</label>
+                    <select class="settings-select" id="themeSelect">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="system">System</option>
+                    </select>
+                </div>
 
-    <div class="power-meter" id="powerMeter">
-      <div class="power-fill" id="powerFill"></div>
+                <div class="settings-group">
+                    <label class="settings-label">Code Font Size</label>
+                    <select class="settings-select" id="fontSizeSelect">
+                        <option value="12">12px</option>
+                        <option value="13" selected>13px</option>
+                        <option value="14">14px</option>
+                        <option value="15">15px</option>
+                        <option value="16">16px</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
+                    <label class="settings-label">Auto-save Files</label>
+                    <select class="settings-select" id="autoSaveSelect">
+                        <option value="true">Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+
+                <div class="add-model-form">
+                    <h3 style="font-size: 16px; margin-bottom: 8px;">Add New AI Model</h3>
+                    <div class="form-row">
+                        <div>
+                            <label class="settings-label">Model Name</label>
+                            <input type="text" class="settings-input" id="newModelName" placeholder="e.g., GPT-4 Turbo">
+                        </div>
+                        <div>
+                            <label class="settings-label">Provider</label>
+                            <input type="text" class="settings-input" id="newModelProvider" placeholder="e.g., openai">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="settings-label">Model Identifier</label>
+                        <input type="text" class="settings-input" id="newModelId" placeholder="e.g., gpt-4-turbo">
+                    </div>
+                    <div>
+                        <label class="settings-label">API Key</label>
+                        <input type="password" class="settings-input" id="newModelApiKey" placeholder="sk-...">
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label class="settings-label">Icon</label>
+                            <select class="settings-select" id="newModelIcon">
+                                <option value="openai">OpenAI</option>
+                                <option value="claude">Claude</option>
+                                <option value="gemini">Gemini</option>
+                                <option value="llama">Llama</option>
+                                <option value="mistral">Mistral</option>
+                                <option value="cohere">Cohere</option>
+                                <option value="qwen">Qwen</option>
+                                <option value="deepseek">DeepSeek</option>
+                                <option value="grok">Grok</option>
+                                <option value="phi">Phi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="settings-label">Color</label>
+                            <input type="color" class="settings-input" id="newModelColor" value="#615CED" style="height: 44px; padding: 4px;">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="addModelBtn">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        Add Model
+                    </button>
+                </div>
+
+                <div class="models-list" id="modelsList">
+                    <h3 style="font-size: 16px; margin: 24px 0 16px 0;">Installed Models</h3>
+                    <!-- Models will be listed here -->
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="hint" id="hint">Drag the ball back & release to toss ✨</div>
-
-    <div class="bottom-bar glass safe-bottom">
-      <button class="action-btn" id="resetBtn">🔄 New City</button>
-      <button class="action-btn primary" id="tossBtn">🎯 Toss</button>
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <span class="toast-message" id="toastMessage"></span>
     </div>
-  </div>
 
-  <script type="importmap">
-    {
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-    "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
-  }
-}
-</script>
+    <script>
+        // SVG Icons for different AI providers
+        const providerIcons = {
+            openai: `<svg viewBox="0 0 24 24"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9771 4.1823a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729z"/></svg>`,
+            claude: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>`,
+            gemini: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`,
+            llama: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1s-1-.45-1-1v-4c0-.55.45-1 1-1zm4 0c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1s-1-.45-1-1v-4c0-.55.45-1 1-1z"/></svg>`,
+            mistral: `<svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 13H6l6-13z"/></svg>`,
+            cohere: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12" stroke="white" stroke-width="2"/></svg>`,
+            qwen: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm-1-9h2v4h-2zm0 6h2v2h-2z"/></svg>`,
+            deepseek: `<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`,
+            grok: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`,
+            phi: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>`,
+            yi: `<svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>`,
+            dolphin: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>`,
+            wizard: `<svg viewBox="0 0 24 24"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.86L12 5.84zM12 22c-3.31 0-6-2.69-6-6 0-2.22 1.21-4.15 3-5.19V16h6v-5.19c1.79 1.04 3 2.97 3 5.19 0 3.31-2.69 6-6 6z"/></svg>`,
+            default: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>`
+        };
 
-  <script type="module">
-    import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import * as CANNON from 'cannon-es';
+        const providerColors = {
+            openai: '#10A37F',
+            claude: '#D97757',
+            gemini: '#4285F4',
+            llama: '#0668E1',
+            mistral: '#FF7000',
+            cohere: '#3F51B5',
+            qwen: '#615CED',
+            deepseek: '#0066FF',
+            grok: '#FFFFFF',
+            phi: '#00BCF2',
+            yi: '#1E88E5',
+            dolphin: '#00ACC1',
+            wizard: '#7B1FA2',
+            default: '#615CED'
+        };
 
-/* ============================================================
- *  SHAPES REGISTRY
- *  --------------------------------------------------------
- *  Each shape is a self-contained module. To add a new shape,
- *  just add a new entry here with: createMesh, createBody,
- *  defaultSize, and mass. Think of each entry as its own file
- *  in a "shapes/" folder.
- * ============================================================ */
+        // State
+        let models = [];
+        let selectedModelIndex = 0;
+        let files = [{ name: 'main.js', content: '' }];
+        let activeFileIndex = 0;
+        let messages = [];
 
-const PASTEL = {
-  pink:     0xFFB5C2,
-  lavender: 0xC8B6FF,
-  mint:     0xB8E6C8,
-  peach:    0xFFD4A3,
-  sky:      0xB5D8FF,
-  cream:    0xFFF5E1,
-  lilac:    0xE0BBE4,
-  rose:     0xFFC9DE,
-};
-const PALETTE = Object.values(PASTEL);
+        // DOM Elements
+        const selectedModelEl = document.getElementById('selectedModel');
+        const selectedModelIconEl = document.getElementById('selectedModelIcon');
+        const selectedModelNameEl = document.getElementById('selectedModelName');
+        const selectedModelProviderEl = document.getElementById('selectedModelProvider');
+        const modelDropdownEl = document.getElementById('modelDropdown');
+        const chatMessagesEl = document.getElementById('chatMessages');
+        const messageInputEl = document.getElementById('messageInput');
+        const sendBtnEl = document.getElementById('sendBtn');
+        const fileListEl = document.getElementById('fileList');
+        const addFileBtnEl = document.getElementById('addFileBtn');
+        const settingsBtnEl = document.getElementById('settingsBtn');
+        const settingsModalEl = document.getElementById('settingsModal');
+        const closeSettingsEl = document.getElementById('closeSettings');
+        const menuBtnEl = document.getElementById('menuBtn');
+        const sidebarEl = document.getElementById('sidebar');
+        const toastEl = document.getElementById('toast');
+        const toastIconEl = document.getElementById('toastIcon');
+        const toastMessageEl = document.getElementById('toastMessage');
+        const addModelBtnEl = document.getElementById('addModelBtn');
+        const modelsListEl = document.getElementById('modelsList');
 
-// Shared physical material for all shapes (bouncy, cozy)
-const physicsMaterial = new CANNON.Material('cozy');
-const contactMat = new CANNON.ContactMaterial(physicsMaterial, physicsMaterial, {
-  friction: 0.35,
-  restitution: 0.42,
-});
+        // Load models from JSON
+        async function loadModels() {
+            try {
+                const response = await fetch('models.json');
+                if (!response.ok) throw new Error('Failed to load models');
+                const data = await response.json();
+                models = data.models || [];
+                
+                if (models.length > 0) {
+                    updateSelectedModelDisplay();
+                    renderModelDropdown();
+                    renderModelsList();
+                }
+            } catch (error) {
+                console.error('Error loading models:', error);
+                showToast('Failed to load models', 'error');
+            }
+        }
 
-// Shared PBR material factory (shiny pastel with clearcoat)
-function makeMat(color, opts = {}) {
-  return new THREE.MeshPhysicalMaterial({
-    color,
-    roughness: opts.roughness ?? 0.28,
-    metalness: opts.metalness ?? 0.02,
-    clearcoat: opts.clearcoat ?? 0.7,
-    clearcoatRoughness: 0.25,
-    reflectivity: 0.6,
-    envMapIntensity: 1.1,
-    sheen: opts.sheen ?? 0.3,
-    sheenColor: new THREE.Color(0xffffff),
-    ...opts,
-  });
-}
+        // Update selected model display
+        function updateSelectedModelDisplay() {
+            if (models.length === 0) return;
+            
+            const model = models[selectedModelIndex];
+            const iconSvg = providerIcons[model.icon] || providerIcons.default;
+            const color = model.color || providerColors[model.icon] || providerColors.default;
+            
+            selectedModelIconEl.innerHTML = iconSvg;
+            selectedModelIconEl.style.background = color;
+            selectedModelNameEl.textContent = model.name;
+            selectedModelProviderEl.textContent = model.provider;
+        }
 
-/* ---------- shapes/roundedBox.js ---------- */
-const RoundedBox = {
-  id: 'roundedBox',
-  name: 'Rounded Box',
-  icon: '▢',
-  defaultSize: { x: 1, y: 1, z: 1, radius: 0.18 },
-  mass: 1.2,
-  createMesh(size, color) {
-    const geo = new RoundedBoxGeometry(size.x, size.y, size.z, 5, size.radius ?? 0.18);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    // Use sphere approximation for stable, rounded physics
-    const r = Math.min(size.x, size.y, size.z) * 0.48;
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.1 });
-    body.addShape(new CANNON.Sphere(r));
-    return body;
-  },
-};
+        // Render model dropdown
+        function renderModelDropdown() {
+            modelDropdownEl.innerHTML = models.map((model, index) => {
+                const iconSvg = providerIcons[model.icon] || providerIcons.default;
+                const color = model.color || providerColors[model.icon] || providerColors.default;
+                const isSelected = index === selectedModelIndex ? 'selected' : '';
+                
+                return `
+                    <div class="model-option ${isSelected}" data-index="${index}">
+                        <div class="model-icon" style="background: ${color}">
+                            ${iconSvg}
+                        </div>
+                        <div class="model-info">
+                            <div class="model-name">${model.name}</div>
+                            <div class="model-provider">${model.provider}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
-/* ---------- shapes/capsule.js ---------- */
-const Capsule = {
-  id: 'capsule',
-  name: 'Capsule',
-  icon: '⬭',
-  defaultSize: { radius: 0.45, height: 1.2 },
-  mass: 1.0,
-  createMesh(size, color) {
-    const geo = new THREE.CapsuleGeometry(size.radius, size.height, 12, 20);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.12 });
-    // Compound: cylinder + two spheres
-    body.addShape(new CANNON.Cylinder(size.radius, size.radius, size.height, 12));
-    body.addShape(new CANNON.Sphere(size.radius), new CANNON.Vec3(0, size.height/2, 0));
-    body.addShape(new CANNON.Sphere(size.radius), new CANNON.Vec3(0, -size.height/2, 0));
-    return body;
-  },
-};
+            // Add click handlers
+            modelDropdownEl.querySelectorAll('.model-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    selectedModelIndex = parseInt(option.dataset.index);
+                    updateSelectedModelDisplay();
+                    renderModelDropdown();
+                    modelDropdownEl.classList.remove('open');
+                });
+            });
+        }
 
-/* ---------- shapes/sphere.js ---------- */
-const Sphere = {
-  id: 'sphere',
-  name: 'Sphere',
-  icon: '●',
-  defaultSize: { radius: 0.55 },
-  mass: 0.9,
-  createMesh(size, color) {
-    const geo = new THREE.SphereGeometry(size.radius, 32, 24);
-    return new THREE.Mesh(geo, makeMat(color, { clearcoat: 1.0, roughness: 0.15 }));
-  },
-  createBody(size, mass) {
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.05, angularDamping: 0.08 });
-    body.addShape(new CANNON.Sphere(size.radius));
-    return body;
-  },
-};
+        // Render models list in settings
+        function renderModelsList() {
+            modelsListEl.innerHTML = `
+                <h3 style="font-size: 16px; margin: 24px 0 16px 0;">Installed Models (${models.length})</h3>
+                ${models.map((model, index) => {
+                    const iconSvg = providerIcons[model.icon] || providerIcons.default;
+                    const color = model.color || providerColors[model.icon] || providerColors.default;
+                    
+                    return `
+                        <div class="model-card">
+                            <div class="model-icon" style="background: ${color}; width: 40px; height: 40px;">
+                                ${iconSvg}
+                            </div>
+                            <div class="model-card-info">
+                                <div class="model-card-name">${model.name}</div>
+                                <div class="model-card-details">${model.provider} • ${model.model}</div>
+                            </div>
+                            <div class="model-card-actions">
+                                ${index !== 0 ? `
+                                    <button class="action-icon-btn delete" onclick="deleteModel(${index})">
+                                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
 
-/* ---------- shapes/cylinder.js ---------- */
-const Cylinder = {
-  id: 'cylinder',
-  name: 'Drum',
-  icon: '⬤',
-  defaultSize: { radius: 0.5, height: 0.9 },
-  mass: 1.3,
-  createMesh(size, color) {
-    const geo = new THREE.CylinderGeometry(size.radius, size.radius, size.height, 28, 1);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
-    body.addShape(new CANNON.Cylinder(size.radius, size.radius, size.height, 16));
-    return body;
-  },
-};
+        // Delete model
+        window.deleteModel = async function(index) {
+            if (index === 0) {
+                showToast('Cannot delete the default model', 'error');
+                return;
+            }
+            
+            models.splice(index, 1);
+            if (selectedModelIndex >= models.length) {
+                selectedModelIndex = models.length - 1;
+            }
+            
+            await saveModels();
+            updateSelectedModelDisplay();
+            renderModelDropdown();
+            renderModelsList();
+            showToast('Model deleted successfully', 'success');
+        };
 
-/* ---------- shapes/torus.js ---------- */
-const Torus = {
-  id: 'torus',
-  name: 'Donut',
-  icon: '◎',
-  defaultSize: { radius: 0.55, tube: 0.22 },
-  mass: 0.8,
-  createMesh(size, color) {
-    const geo = new THREE.TorusGeometry(size.radius, size.tube, 20, 40);
-    return new THREE.Mesh(geo, makeMat(color, { clearcoat: 0.9 }));
-  },
-  createBody(size, mass) {
-    // Approximate with a sphere for stable physics
-    const r = size.radius * 0.75;
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
-    body.addShape(new CANNON.Sphere(r));
-    return body;
-  },
-};
+        // Save models to JSON
+        async function saveModels() {
+            try {
+                const response = await fetch('models.json', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ models })
+                });
+                
+                if (!response.ok) throw new Error('Failed to save models');
+            } catch (error) {
+                console.error('Error saving models:', error);
+                // For local testing, we'll just log it
+                console.log('Models would be saved to models.json');
+            }
+        }
 
-/* ---------- shapes/cone.js ---------- */
-const Cone = {
-  id: 'cone',
-  name: 'Cone',
-  icon: '▲',
-  defaultSize: { radius: 0.5, height: 1.1 },
-  mass: 1.0,
-  createMesh(size, color) {
-    // Rounded cone: use lathe for smooth rounded tip
-    const pts = [];
-    const segs = 16;
-    for (let i = 0; i <= segs; i++) {
-      const t = i / segs;
-      const y = -size.height/2 + t * size.height;
-      // Smooth rounded profile
-      const r = size.radius * Math.cos(t * Math.PI * 0.5) * (1 - Math.pow(t, 3) * 0.3);
-      pts.push(new THREE.Vector2(Math.max(0.02, r), y));
-    }
-    const geo = new THREE.LatheGeometry(pts, 28);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    const r = size.radius * 0.6;
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
-    body.addShape(new CANNON.Sphere(r));
-    return body;
-  },
-};
+        // Render file list
+        function renderFileList() {
+            fileListEl.innerHTML = files.map((file, index) => `
+                <div class="file-item ${index === activeFileIndex ? 'active' : ''}" data-index="${index}">
+                    <div class="file-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    </div>
+                    <span class="file-name">${file.name}</span>
+                </div>
+            `).join('');
 
-/* ---------- shapes/pearl.js (glassy) ---------- */
-const Pearl = {
-  id: 'pearl',
-  name: 'Pearl',
-  icon: '◉',
-  defaultSize: { radius: 0.5 },
-  mass: 0.7,
-  createMesh(size, color) {
-    const geo = new THREE.SphereGeometry(size.radius, 32, 24);
-    return new THREE.Mesh(geo, makeMat(color, {
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      roughness: 0.08,
-      transmission: 0.4,
-      thickness: 0.8,
-      ior: 1.4,
-    }));
-  },
-  createBody(size, mass) {
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.05, angularDamping: 0.08 });
-    body.addShape(new CANNON.Sphere(size.radius));
-    return body;
-  },
-};
+            // Add click handlers
+            fileListEl.querySelectorAll('.file-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    activeFileIndex = parseInt(item.dataset.index);
+                    renderFileList();
+                });
+            });
+        }
 
-/* ---------- shapes/cube.js ---------- */
-const Cube = {
-  id: 'cube',
-  name: 'Cube',
-  icon: '⬛',
-  defaultSize: { x: 0.9, y: 0.9, z: 0.9 },
-  mass: 1.1,
-  createMesh(size, color) {
-    const geo = new THREE.BoxGeometry(size.x, size.y, size.z);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.1 });
-    body.addShape(new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)));
-    return body;
-  },
-};
+        // Add message to chat
+        function addMessage(content, isUser = false, codeBlock = null) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            
+            const avatarClass = isUser ? 'user' : 'ai';
+            const avatarSvg = isUser 
+                ? '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'
+                : providerIcons[models[selectedModelIndex]?.icon] || providerIcons.default;
+            
+            const senderName = isUser ? 'You' : models[selectedModelIndex]?.name || 'AI';
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let codeHtml = '';
+            if (codeBlock) {
+                codeHtml = `
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">${codeBlock.language || 'Code'}</span>
+                            <div class="code-actions">
+                                <button class="code-action-btn" onclick="copyCode(this)">
+                                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div class="code-content">
+                            <pre><code>${escapeHtml(codeBlock.code)}</code></pre>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            messageEl.innerHTML = `
+                <div class="message-avatar ${avatarClass}">
+                    ${avatarSvg}
+                </div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-sender">${senderName}</span>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="message-text">
+                        ${content}
+                        ${codeHtml}
+                    </div>
+                </div>
+            `;
+            
+            chatMessagesEl.appendChild(messageEl);
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
 
-/* ---------- shapes/pyramid.js ---------- */
-const Pyramid = {
-  id: 'pyramid',
-  name: 'Pyramid',
-  icon: '▲',
-  defaultSize: { radius: 0.55, height: 1.0 },
-  mass: 1.0,
-  createMesh(size, color) {
-    const geo = new THREE.ConeGeometry(size.radius, size.height, 4);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    const r = size.radius * 0.5;
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.1, angularDamping: 0.15 });
-    body.addShape(new CANNON.Sphere(r));
-    return body;
-  },
-};
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-/* ---------- shapes/prism.js ---------- */
-const Prism = {
-  id: 'prism',
-  name: 'Prism',
-  icon: '📐',
-  defaultSize: { radius: 0.5, height: 1.0 },
-  mass: 1.1,
-  createMesh(size, color) {
-    const geo = new THREE.CylinderGeometry(size.radius, size.radius, size.height, 3);
-    return new THREE.Mesh(geo, makeMat(color));
-  },
-  createBody(size, mass) {
-    const body = new CANNON.Body({ mass, material: physicsMaterial, linearDamping: 0.08, angularDamping: 0.12 });
-    body.addShape(new CANNON.Cylinder(size.radius, size.radius, size.height, 3));
-    return body;
-  },
-};
+        // Copy code
+        window.copyCode = function(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('Code copied!', 'success');
+            });
+        };
 
-// The registry — add new shapes here
-const SHAPES = {
-  roundedBox: RoundedBox,
-  capsule:    Capsule,
-  sphere:     Sphere,
-  cylinder:   Cylinder,
-  torus:      Torus,
-  cone:       Cone,
-  pearl:      Pearl,
-  cube:       Cube,
-  pyramid:    Pyramid,
-  prism:      Prism,
-};
-const SHAPE_LIST = Object.values(SHAPES);
+        // Show typing indicator
+        function showTypingIndicator() {
+            const indicatorEl = document.createElement('div');
+            indicatorEl.className = 'message';
+            indicatorEl.id = 'typingIndicator';
+            indicatorEl.innerHTML = `
+                <div class="message-avatar ai">
+                    ${providerIcons[models[selectedModelIndex]?.icon] || providerIcons.default}
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatMessagesEl.appendChild(indicatorEl);
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
 
-/* ============================================================
- *  SCENE SETUP
- * ============================================================ */
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
 
-const app = document.getElementById('app');
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-app.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xF5DCEE, 25, 70);
-
-// Pastel gradient background
-const bgCanvas = document.createElement('canvas');
-bgCanvas.width = 512; bgCanvas.height = 512;
-const bgCtx = bgCanvas.getContext('2d');
-const grad = bgCtx.createLinearGradient(0, 0, 0, 512);
-grad.addColorStop(0, '#FFE5EC');
-grad.addColorStop(0.5, '#E0BBE4');
-grad.addColorStop(1, '#B5D8FF');
-bgCtx.fillStyle = grad;
-bgCtx.fillRect(0, 0, 512, 512);
-const bgTex = new THREE.CanvasTexture(bgCanvas);
-scene.background = bgTex;
-
-// Camera
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
-camera.position.set(0, 8, 18);
-
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.minDistance = 8;
-controls.maxDistance = 40;
-controls.maxPolarAngle = Math.PI * 0.48;
-controls.minPolarAngle = Math.PI * 0.15;
-controls.target.set(0, 2, 0);
-controls.enablePan = false;
-// Touch: one finger on empty = orbit, two finger = zoom
-controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
-
-// Environment map (pastel reflections)
-const pmrem = new THREE.PMREMGenerator(renderer);
-const envScene = new THREE.Scene();
-const envGeo = new THREE.SphereGeometry(20, 32, 32);
-const envMat = new THREE.ShaderMaterial({
-  side: THREE.BackSide,
-  uniforms: {},
-  vertexShader: `varying vec3 vPos; void main(){ vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-  fragmentShader: `varying vec3 vPos;
-    void main(){
-      vec3 n = normalize(vPos);
-      vec3 top = vec3(1.0, 0.88, 0.93);
-      vec3 mid = vec3(0.88, 0.78, 0.92);
-      vec3 bot = vec3(0.72, 0.85, 0.98);
-      vec3 c = mix(bot, mid, smoothstep(-1.0, 0.0, n.y));
-      c = mix(c, top, smoothstep(0.0, 1.0, n.y));
-      gl_FragColor = vec4(c, 1.0);
-    }`,
-});
-envScene.add(new THREE.Mesh(envGeo, envMat));
-const envMap = pmrem.fromScene(envScene, 0.04).texture;
-scene.environment = envMap;
-envGeo.dispose(); envMat.dispose(); pmrem.dispose();
-
-// Lighting — cozy 3-point
-const hemi = new THREE.HemisphereLight(0xFFE5EC, 0xB5D8FF, 0.7);
-scene.add(hemi);
-
-const key = new THREE.DirectionalLight(0xFFF5E1, 1.4);
-key.position.set(8, 14, 6);
-key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
-key.shadow.camera.left = -18; key.shadow.camera.right = 18;
-key.shadow.camera.top = 18; key.shadow.camera.bottom = -18;
-key.shadow.camera.near = 0.5; key.shadow.camera.far = 50;
-key.shadow.bias = -0.0005;
-key.shadow.radius = 5;
-scene.add(key);
-
-const fill = new THREE.DirectionalLight(0xC8B6FF, 0.5);
-fill.position.set(-8, 6, -4);
-scene.add(fill);
-
-const rim = new THREE.DirectionalLight(0xFFB5C2, 0.6);
-rim.position.set(0, 4, -10);
-scene.add(rim);
-
-/* ============================================================
- *  PHYSICS WORLD
- * ============================================================ */
-
-const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -18, 0) });
-world.broadphase = new CANNON.SAPBroadphase(world);
-world.allowSleep = true;
-world.solver.iterations = 10;
-world.addContactMaterial(contactMat);
-
-// Ground (visual + physics)
-const groundGeo = new THREE.CircleGeometry(40, 64);
-const groundMat = makeMat(0xFFF0F5, { roughness: 0.8, clearcoat: 0.2 });
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const groundBody = new CANNON.Body({ mass: 0, material: physicsMaterial });
-groundBody.addShape(new CANNON.Plane());
-groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-world.addBody(groundBody);
-
-// Soft walls (invisible, keep things in play)
-function addWall(x, z, rotY, width = 50) {
-  const b = new CANNON.Body({ mass: 0, material: physicsMaterial });
-  b.addShape(new CANNON.Plane());
-  b.position.set(x, 0, z);
-  b.quaternion.setFromEuler(0, rotY, 0);
-  world.addBody(b);
-}
-addWall(0, -20, 0);
-addWall(-20, 0, Math.PI/2);
-addWall(20, 0, -Math.PI/2);
-
-/* ============================================================
- *  BUILDING GENERATOR
- * ============================================================ */
-
-const cityGroup = new THREE.Group();
-scene.add(cityGroup);
-const cityBodies = [];
-const cityMeshes = [];
-
-function rand(a, b) { return a + Math.random() * (b - a); }
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-function spawnShape(shapeDef, position, scale = 1, color = null) {
-  const size = { ...shapeDef.defaultSize };
-  // Apply scale
-  for (const k in size) if (typeof size[k] === 'number') size[k] *= scale;
-
-  const c = color ?? pick(PALETTE);
-  const mesh = shapeDef.createMesh(size, c);
-  mesh.position.copy(position);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  cityGroup.add(mesh);
-
-  const body = shapeDef.createBody(size, shapeDef.mass * scale);
-  body.position.set(position.x, position.y, position.z);
-  // Random gentle rotation
-  body.quaternion.setFromEuler(rand(-0.1, 0.1), rand(0, Math.PI*2), rand(-0.1, 0.1));
-  world.addBody(body);
-
-  mesh.userData.body = body;
-  body.userData.mesh = mesh;
-  body.userData.shapeDef = shapeDef;
-  body.userData.originalPos = position.clone();
-  body.userData.scored = false;
-
-  cityMeshes.push(mesh);
-  cityBodies.push(body);
-  return { mesh, body };
+        // Send message
+        async function sendMessage() {
+            const content = messageInputEl.value.trim();
+            if (!content) return;
+            
+            // Add user message
+            addMessage(`<p>${escapeHtml(content)}</p>`, true);
+            messageInputEl.value = '';
+            messageInputEl.style.height = 'auto';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            sendBtnEl.disabled = true;
+            
+            // Simulate AI response (in real implementation, call API)
+            setTimeout(() => {
+                removeTypingIndicator();
+                
+                // Check if user asked for code
+                const codeKeywords = ['code', 'function', 'write', 'create', 'make', 'build'];
+                const hasCodeKeyword = codeKeywords.some(keyword => 
+                    content.toLowerCase().includes(keyword)
+                );
+                
+                if (hasCodeKeyword) {
+                    // Simulate code generation
+                    const sampleCode = `// Generated code based on: ${content}
+function exampleFunction() {
+    console.log("Hello from AI!");
+    return "Code generated successfully";
 }
 
-function generateCity() {
-  // Clear existing
-  for (const m of cityMeshes) { cityGroup.remove(m); m.geometry?.dispose(); }
-  for (const b of cityBodies) world.removeBody(b);
-  cityMeshes.length = 0;
-  cityBodies.length = 0;
+exampleFunction();`;
+                    
+                    addMessage(`<p>I've generated some code for you based on your request:</p>`, false, {
+                        language: 'JavaScript',
+                        code: sampleCode
+                    });
+                } else {
+                    addMessage(`<p>I understand you're asking about "${escapeHtml(content)}". How can I help you with coding today?</p>`, false);
+                }
+                
+                sendBtnEl.disabled = false;
+            }, 1500);
+        }
 
-  // Generate clusters of towers
-  const clusterCount = 5 + Math.floor(Math.random() * 3);
-  const radius = 7;
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            toastIconEl.className = `toast-icon ${type}`;
+            toastIconEl.innerHTML = type === 'success' 
+                ? '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
+                : '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+            
+            toastMessageEl.textContent = message;
+            toastEl.classList.add('show');
+            
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
 
-  for (let c = 0; c < clusterCount; c++) {
-    const angle = (c / clusterCount) * Math.PI * 2 + rand(-0.2, 0.2);
-    const dist = rand(3, radius);
-    const cx = Math.cos(angle) * dist;
-    const cz = Math.sin(angle) * dist - 2;
+        // Event Listeners
+        selectedModelEl.addEventListener('click', () => {
+            modelDropdownEl.classList.toggle('open');
+        });
 
-    const towerHeight = Math.floor(rand(3, 7));
-    let y = 0;
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!selectedModelEl.contains(e.target)) {
+                modelDropdownEl.classList.remove('open');
+            }
+        });
 
-    for (let i = 0; i < towerHeight; i++) {
-      const shape = pick(SHAPE_LIST);
-      const scale = rand(0.7, 1.2) * (1 - i * 0.05);
-      const offsetX = rand(-0.3, 0.3);
-      const offsetZ = rand(-0.3, 0.3);
-      const pos = new THREE.Vector3(cx + offsetX, y + 0.6, cz + offsetZ);
-      spawnShape(shape, pos, scale);
-      y += rand(0.9, 1.3);
-    }
-  }
+        sendBtnEl.addEventListener('click', sendMessage);
 
-  // A few scattered single shapes
-  for (let i = 0; i < 8; i++) {
-    const shape = pick(SHAPE_LIST);
-    const angle = rand(0, Math.PI * 2);
-    const dist = rand(2, 10);
-    const pos = new THREE.Vector3(Math.cos(angle) * dist, 0.5, Math.sin(angle) * dist - 2);
-    spawnShape(shape, pos, rand(0.6, 1.0));
-  }
-}
+        messageInputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
 
-generateCity();
+        // Auto-resize textarea
+        messageInputEl.addEventListener('input', () => {
+            messageInputEl.style.height = 'auto';
+            messageInputEl.style.height = Math.min(messageInputEl.scrollHeight, 200) + 'px';
+        });
 
-/* ============================================================
- *  PROJECTILE (the ball you throw)
- * ============================================================ */
+        addFileBtnEl.addEventListener('click', () => {
+            const fileName = prompt('Enter file name:');
+            if (fileName) {
+                files.push({ name: fileName, content: '' });
+                renderFileList();
+                showToast('File added successfully', 'success');
+            }
+        });
 
-const LAUNCH_POS = new THREE.Vector3(0, 1.2, 10);
-const ballGeo = new THREE.SphereGeometry(0.45, 32, 24);
-const ballMat = makeMat(0xFFC9DE, {
-  clearcoat: 1.0,
-  clearcoatRoughness: 0.05,
-  roughness: 0.1,
-  emissive: 0xFFB5C2,
-  emissiveIntensity: 0.15,
-});
-const ballMesh = new THREE.Mesh(ballGeo, ballMat);
-ballMesh.castShadow = true;
-ballMesh.position.copy(LAUNCH_POS);
-scene.add(ballMesh);
+        settingsBtnEl.addEventListener('click', () => {
+            settingsModalEl.classList.add('active');
+        });
 
-const ballBody = new CANNON.Body({
-  mass: 2.2,
-  material: physicsMaterial,
-  linearDamping: 0.05,
-  angularDamping: 0.1,
-  collisionResponse: true,
-});
-ballBody.addShape(new CANNON.Sphere(0.45));
-ballBody.position.set(LAUNCH_POS.x, LAUNCH_POS.y, LAUNCH_POS.z);
-ballBody.type = CANNON.Body.KINEMATIC;
-world.addBody(ballBody);
+        closeSettingsEl.addEventListener('click', () => {
+            settingsModalEl.classList.remove('active');
+        });
 
-// Ball glow
-const glowGeo = new THREE.SphereGeometry(0.6, 24, 16);
-const glowMat = new THREE.ShaderMaterial({
-  transparent: true,
-  depthWrite: false,
-  uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(0xFFB5C2) } },
-  vertexShader: `varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-  fragmentShader: `uniform vec3 uColor; uniform float uTime; varying vec3 vN;
-    void main(){
-      float rim = 1.0 - abs(dot(vN, vec3(0.0, 0.0, 1.0)));
-      rim = pow(rim, 2.5);
-      float pulse = 0.85 + 0.15 * sin(uTime * 2.0);
-      gl_FragColor = vec4(uColor, rim * 0.6 * pulse);
-    }`,
-});
-const ballGlow = new THREE.Mesh(glowGeo, glowMat);
-ballMesh.add(ballGlow);
+        settingsModalEl.addEventListener('click', (e) => {
+            if (e.target === settingsModalEl) {
+                settingsModalEl.classList.remove('active');
+            }
+        });
 
-// Trajectory preview
-const trajPoints = 40;
-const trajGeo = new THREE.BufferGeometry();
-const trajPos = new Float32Array(trajPoints * 3);
-trajGeo.setAttribute('position', new THREE.BufferAttribute(trajPos, 3));
-const trajMat = new THREE.LineDashedMaterial({
-  color: 0xC8B6FF,
-  dashSize: 0.2,
-  gapSize: 0.15,
-  transparent: true,
-  opacity: 0.7,
-});
-const trajLine = new THREE.Line(trajGeo, trajMat);
-trajLine.computeLineDistances();
-trajLine.visible = false;
-scene.add(trajLine);
+        menuBtnEl.addEventListener('click', () => {
+            sidebarEl.classList.toggle('open');
+        });
 
-/* ============================================================
- *  PARTICLES (impact puffs)
- * ============================================================ */
+        // Add model button
+        addModelBtnEl.addEventListener('click', async () => {
+            const name = document.getElementById('newModelName').value.trim();
+            const provider = document.getElementById('newModelProvider').value.trim();
+            const modelId = document.getElementById('newModelId').value.trim();
+            const apiKey = document.getElementById('newModelApiKey').value.trim();
+            const icon = document.getElementById('newModelIcon').value;
+            const color = document.getElementById('newModelColor').value;
+            
+            if (!name || !provider || !modelId || !apiKey) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const newModel = {
+                id: modelId,
+                name,
+                provider,
+                model: modelId,
+                apiKey,
+                icon,
+                color
+            };
+            
+            models.push(newModel);
+            await saveModels();
+            renderModelDropdown();
+            renderModelsList();
+            
+            // Clear form
+            document.getElementById('newModelName').value = '';
+            document.getElementById('newModelProvider').value = '';
+            document.getElementById('newModelId').value = '';
+            document.getElementById('newModelApiKey').value = '';
+            
+            showToast('Model added successfully', 'success');
+        });
 
-const particlePool = [];
-const particleGeo = new THREE.SphereGeometry(0.08, 8, 6);
-
-function spawnPuff(pos, color, count = 8) {
-  for (let i = 0; i < count; i++) {
-    const mat = makeMat(color, { roughness: 0.5, clearcoat: 0.5, transparent: true });
-    const m = new THREE.Mesh(particleGeo, mat);
-    m.position.copy(pos);
-    const vel = new THREE.Vector3(rand(-1, 1), rand(0.5, 2), rand(-1, 1)).multiplyScalar(rand(0.5, 1.5));
-    m.userData = { vel, life: 1.0, decay: rand(0.8, 1.5) };
-    scene.add(m);
-    particlePool.push(m);
-  }
-}
-
-function updateParticles(dt) {
-  for (let i = particlePool.length - 1; i >= 0; i--) {
-    const p = particlePool[i];
-    p.userData.life -= dt * p.userData.decay;
-    if (p.userData.life <= 0) {
-      scene.remove(p);
-      p.material.dispose();
-      particlePool.splice(i, 1);
-      continue;
-    }
-    p.userData.vel.y -= 6 * dt;
-    p.position.addScaledVector(p.userData.vel, dt);
-    p.material.opacity = p.userData.life;
-    p.scale.setScalar(p.userData.life);
-  }
-}
-
-/* ============================================================
- *  THROW CONTROLS
- * ============================================================ */
-
-let isAiming = false;
-let aimStart = new THREE.Vector2();
-let aimCurrent = new THREE.Vector2();
-let throwPower = 0;
-let throwDir = new THREE.Vector3();
-const MAX_POWER = 22;
-
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-
-function getPointer(e) {
-  const t = e.touches ? e.touches[0] : e;
-  return { x: t.clientX, y: t.clientY };
-}
-
-function isOverUI(e) {
-  const t = e.touches ? e.touches[0] : e;
-  const el = document.elementFromPoint(t.clientX, t.clientY);
-  return el && el.closest('.ui-layer');
-}
-
-function onPointerDown(e) {
-  if (isOverUI(e)) return;
-  const p = getPointer(e);
-  pointer.x = (p.x / window.innerWidth) * 2 - 1;
-  pointer.y = -(p.y / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObject(ballMesh, true);
-  if (hits.length > 0) {
-    isAiming = true;
-    aimStart.set(p.x, p.y);
-    aimCurrent.set(p.x, p.y);
-    controls.enabled = false;
-    document.getElementById('powerMeter').classList.add('visible');
-    document.getElementById('hint').style.display = 'none';
-    e.preventDefault();
-  }
-}
-
-function onPointerMove(e) {
-  if (!isAiming) return;
-  const p = getPointer(e);
-  aimCurrent.set(p.x, p.y);
-  const dx = aimStart.x - aimCurrent.x;
-  const dy = aimStart.y - aimCurrent.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  throwPower = Math.min(dist / 200, 1) * MAX_POWER;
-  document.getElementById('powerFill').style.height = (throwPower / MAX_POWER * 100) + '%';
-
-  // Direction: opposite of drag, projected into world
-  const camRight = new THREE.Vector3();
-  const camUp = new THREE.Vector3();
-  camera.getWorldDirection(new THREE.Vector3());
-  camRight.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
-  camUp.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
-
-  throwDir.set(0, 0, 0)
-    .addScaledVector(camRight, dx / 200)
-    .addScaledVector(camUp, -dy / 200)
-    .normalize();
-  // Bias forward (toward city)
-  throwDir.z = -Math.abs(throwDir.z) - 0.5;
-  throwDir.y = Math.max(throwDir.y, 0.2);
-  throwDir.normalize();
-
-  updateTrajectoryPreview();
-  e.preventDefault();
-}
-
-function onPointerUp(e) {
-  if (!isAiming) return;
-  isAiming = false;
-  controls.enabled = true;
-  document.getElementById('powerMeter').classList.remove('visible');
-  if (throwPower > 1) {
-    launchBall();
-  }
-  throwPower = 0;
-  trajLine.visible = false;
-}
-
-function updateTrajectoryPreview() {
-  if (throwPower < 1) { trajLine.visible = false; return; }
-  trajLine.visible = true;
-  const vel = throwDir.clone().multiplyScalar(throwPower);
-  const pos = LAUNCH_POS.clone();
-  const v = vel.clone();
-  const dt = 0.05;
-  const attr = trajGeo.attributes.position;
-  for (let i = 0; i < trajPoints; i++) {
-    attr.setXYZ(i, pos.x, pos.y, pos.z);
-    v.y -= 18 * dt;
-    pos.addScaledVector(v, dt);
-    if (pos.y < 0) break;
-  }
-  attr.needsUpdate = true;
-  trajLine.computeLineDistances();
-}
-
-let resetTimeout = null;
-
-function launchBall() {
-  if (resetTimeout) clearTimeout(resetTimeout);
-  const def = SHAPES[currentShapeId];
-  const vel = throwDir.clone().multiplyScalar(throwPower);
-  ballBody.mass = def ? def.mass : 2.2;
-  ballBody.type = CANNON.Body.DYNAMIC;
-  ballBody.updateMassProperties();
-  ballBody.velocity.set(vel.x, vel.y, vel.z);
-  ballBody.angularVelocity.set(rand(-5, 5), rand(-5, 5), rand(-5, 5));
-  ballBody.wakeUp();
-  shots++;
-  updateUI();
-
-  // Reset after flight
-  resetTimeout = setTimeout(resetBall, 4500);
-}
-
-function resetBall() {
-  if (resetTimeout) {
-    clearTimeout(resetTimeout);
-    resetTimeout = null;
-  }
-  ballBody.type = CANNON.Body.KINEMATIC;
-  ballBody.velocity.set(0, 0, 0);
-  ballBody.angularVelocity.set(0, 0, 0);
-  ballBody.position.set(LAUNCH_POS.x, LAUNCH_POS.y, LAUNCH_POS.z);
-  ballBody.quaternion.set(0, 0, 0, 1);
-}
-
-renderer.domElement.addEventListener('pointerdown', onPointerDown);
-renderer.domElement.addEventListener('pointermove', onPointerMove);
-renderer.domElement.addEventListener('pointerup', onPointerUp);
-renderer.domElement.addEventListener('pointercancel', onPointerUp);
-
-/* ============================================================
- *  UI
- * ============================================================ */
-
-let currentShapeId = 'roundedBox';
-let score = 0;
-let shots = 0;
-
-const tray = document.getElementById('shapeTray');
-SHAPE_LIST.forEach((s, i) => {
-  const btn = document.createElement('button');
-  btn.className = 'shape-btn' + (i === 0 ? ' active' : '');
-  btn.dataset.id = s.id;
-  btn.innerHTML = `${s.icon}<span class="label">${s.name}</span>`;
-  btn.addEventListener('click', () => {
-    currentShapeId = s.id;
-    document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    updateBallAppearance();
-  });
-  tray.appendChild(btn);
-});
-
-function updateBallAppearance() {
-  const def = SHAPES[currentShapeId];
-  const size = { ...def.defaultSize };
-  // Normalize so ball fits in ~0.45 radius
-  const maxDim = Math.max(size.x || size.radius * 2 || 1, size.y || size.radius * 2 || 1, size.z || size.radius * 2 || 1);
-  const scale = 0.9 / maxDim;
-  for (const k in size) if (typeof size[k] === 'number') size[k] *= scale;
-
-  const newGeo = def.createMesh(size, 0xFFC9DE).geometry;
-  ballMesh.geometry.dispose();
-  ballMesh.geometry = newGeo;
-
-  // Replace physics shape
-  while (ballBody.shapes.length) {
-    ballBody.removeShape(ballBody.shapes[0]);
-  }
-  const tmp = def.createBody(size, def.mass);
-  tmp.shapes.forEach((sh, i) => {
-    ballBody.addShape(sh, tmp.shapeOffsets[i], tmp.shapeOrientations[i]);
-  });
-  ballBody.mass = def.mass;
-  ballBody.updateMassProperties();
-}
-
-document.getElementById('resetBtn').addEventListener('click', () => {
-  generateCity();
-  resetBall();
-  score = 0;
-  shots = 0;
-  updateUI();
-});
-
-document.getElementById('tossBtn').addEventListener('click', () => {
-  // Quick toss with random-ish direction
-  resetBall();
-  const dir = new THREE.Vector3(rand(-0.3, 0.3), rand(0.4, 0.7), -1).normalize();
-  throwDir.copy(dir);
-  throwPower = MAX_POWER * 0.75;
-  launchBall();
-});
-
-function updateUI() {
-  document.getElementById('scoreValue').textContent = score;
-  document.getElementById('shotsValue').textContent = shots;
-  const pill = document.getElementById('scorePill');
-  pill.classList.add('bump');
-  setTimeout(() => pill.classList.remove('bump'), 300);
-}
-
-/* ============================================================
- *  SCORING
- * ============================================================ */
-
-function checkScore() {
-  for (const b of cityBodies) {
-    if (b.userData.scored) continue;
-    const orig = b.userData.originalPos;
-    const dx = b.position.x - orig.x;
-    const dy = b.position.y - orig.y;
-    const dz = b.position.z - orig.z;
-    const dist2 = dx*dx + dy*dy + dz*dz;
-    const speed2 = b.velocity.x*b.velocity.x + b.velocity.y*b.velocity.y + b.velocity.z*b.velocity.z;
-    if (dist2 > 1.5 || speed2 > 4) {
-      b.userData.scored = true;
-      score++;
-      updateUI();
-      // Puff
-      const c = b.userData.mesh.material.color.getHex();
-      spawnPuff(new THREE.Vector3(b.position.x, b.position.y, b.position.z), c, 6);
-    }
-  }
-}
-
-/* ============================================================
- *  MAIN LOOP
- * ============================================================ */
-
-const clock = new THREE.Clock();
-const fixedDt = 1 / 60;
-let acc = 0;
-
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  acc += dt;
-
-  // Fixed-step physics
-  while (acc >= fixedDt) {
-    world.step(fixedDt);
-    acc -= fixedDt;
-  }
-
-  // Sync meshes
-  for (const b of cityBodies) {
-    const m = b.userData.mesh;
-    m.position.copy(b.position);
-    m.quaternion.copy(b.quaternion);
-  }
-  ballMesh.position.copy(ballBody.position);
-  ballMesh.quaternion.copy(ballBody.quaternion);
-
-  // Ball glow pulse
-  glowMat.uniforms.uTime.value = clock.elapsedTime;
-
-  // Particles
-  updateParticles(dt);
-
-  // Score check (throttled)
-  if (ballBody.type === CANNON.Body.DYNAMIC) checkScore();
-
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-/* ============================================================
- *  RESIZE
- * ============================================================ */
-
-function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
-window.addEventListener('resize', onResize);
-window.addEventListener('orientationchange', () => setTimeout(onResize, 200));
-
-// Prevent iOS bounce
-document.addEventListener('gesturestart', e => e.preventDefault());
-document.addEventListener('touchmove', e => {
-  if (e.touches.length > 1) e.preventDefault();
-}, { passive: false });
-
-  </script>
+        // Initialize
+        loadModels();
+        renderFileList();
+    </script>
 </body>
+</html>'''
 
-</html>
+with open('index.html', 'w') as f:
+    f.write(html_content)
+
+print("index.html created successfully!")
+ # Result 
+index.html created successfully!
