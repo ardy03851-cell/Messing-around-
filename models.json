@@ -1,4 +1,3 @@
-# Create the models.json file first
 models_data = {
     "models": [
         {
